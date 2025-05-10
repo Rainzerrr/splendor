@@ -43,4 +43,20 @@ public class GemStack {
     public Map<GemToken, Integer> getGems() {
         return Map.copyOf(gems);
     }
+
+    @Override
+    public String toString() {
+        StringBuilder builder = new StringBuilder();
+        int i = 0;
+        for (Map.Entry<GemToken, Integer> entry : gems.entrySet()) {
+            if (i++ > 0) {
+                builder.append(", ");
+            }
+            builder.append(entry.getKey().name())
+                    .append("->")
+                    .append(entry.getValue());
+        }
+
+        return builder.toString();
+    }
 }

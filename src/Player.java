@@ -2,11 +2,14 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class Player {
+    private String name;
     private GemStack wallet;
-    private List<DevelopmentCard> cards;
-    public Player(){
+    private ArrayList<DevelopmentCard> cards;
+
+    public Player(String name){
         this.wallet = new GemStack(0);
         this.cards = new ArrayList<>();
+        this.name = name;
     }
 
     public GemStack getWallet() {
@@ -30,12 +33,17 @@ public class Player {
         cards.clear();
     }
 
+    public int getPrestigeScore(){
+        int score = 0;
+        for(DevelopmentCard card : cards){
+            score += card.prestigeScore();
+        }
+        return score;
+    }
+
     @Override
     public String toString() {
-        return "Player{" +
-                "wallet=" + wallet +
-                ", cards=" + cards +
-                '}';
+        return this.name;
     }
 
     public int getNbCards(){

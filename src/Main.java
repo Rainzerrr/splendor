@@ -6,8 +6,14 @@ public class Main {
     public static void main(String[] args) {
         //TIP Press <shortcut actionId="ShowIntentionActions"/> with your caret at the highlighted text
         // to see how IntelliJ IDEA suggests fixing it.
-        System.out.println("Hello and welcome! Test");
-        var bank = new GemStack(7);
-        System.out.println(bank);
+        System.out.println("Let the game begin !");
+        Game game = new Game(2);
+        // Ajout des joueurs de la partie
+        var player1 = new Player("Mounir");
+        var player2 = new Player("Mounir");
+        game.addPlayer(player1);
+        game.addPlayer(player2);
+
+        game.launch();
     }
 }
