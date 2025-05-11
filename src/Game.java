@@ -2,11 +2,10 @@ import java.util.*;
 import java.util.Scanner;
 
 public class Game {
+    private final List<Player> players;
+    private final GemStack bank;
+    private final List<DevelopmentCard> cards;
     private boolean gameOver;
-
-    private List<Player> players;
-    private GemStack bank;
-    private List<DevelopmentCard> cards;
     private ArrayList<DevelopmentCard> displayedCards;
 
 
@@ -41,11 +40,11 @@ public class Game {
         System.out.println("---------------------------------------------------------");
         System.out.println("Board");
         System.out.println("---------------------------------------------------------");
-        System.out.println( bank.toString());
+        System.out.println(bank);
         System.out.println("---------------------------------------------------------");
 
-        for(var i=0; i<displayedCards.size(); i++){
-            System.out.println((i+1) + " - " + displayedCards.get(i).toString());
+        for (var i = 0; i < displayedCards.size(); i++) {
+            System.out.println((i + 1) + " - " + displayedCards.get(i).toString());
 //            if(i%4==3 && i<displayedCards.size()-1){
 //                System.out.println();
 //            }
@@ -53,10 +52,10 @@ public class Game {
         System.out.println("---------------------------------------------------------");
     }
 
-    public void displayRanking(){
+    public void displayRanking() {
         players.sort(Comparator.comparingInt(Player::getPrestigeScore).reversed());
-        for(int i=0; i<players.size(); i++){
-            System.out.println((i+1) + " - " + players.get(i).toString());
+        for (int i = 0; i < players.size(); i++) {
+            System.out.println((i + 1) + " - " + players.get(i).toString());
         }
     }
 
@@ -105,39 +104,64 @@ public class Game {
     private void drawCard(Player p) {
         Objects.requireNonNull(p);
 
-        if (displayedCards.isEmpty()) {                  // plus rien à piocher
-            System.out.println("Aucune carte n'est dans la pioche.");
+        /* --------- plus de cartes sur l’étalage ? --------- */
+        if (displayedCards.isEmpty()) {
+            System.out.println("Aucune carte n'est actuellement proposée.");
             return;
         }
 
-        // 1. on montre les cartes disponibles
-        showHeader("Cartes disponibles à piocher");
-        showCards(displayedCards);                       // numérotation 1,2,3…
+        /* --------- boucle jusqu’à un achat valide --------- */
+        while (true) {
 
-        // 2. on demande l’indice
-        int idx = askInt("Indice (1-" + displayedCards.size() + ") : ") - 1;
+            showHeader("Gemmes en votre possession");
+            showWallet(p);
 
-        // 3. on vérifie la saisie
-        if (idx < 0 || idx >= displayedCards.size()) {
-            System.out.println("Indice invalide.");
+            showHeader("Cartes disponibles à l'achat");
+            showCards(displayedCards);
+
+            int idx = askInt("Indice de la carte (1-%d, 0 pour annuler) : "
+                    .formatted(displayedCards.size())) - 1;
+
+            /* --- 0 → on quitte la méthode sans rien changer --- */
+            if (idx < 0) {
+                System.out.println("Achat annulé.\n");
+                return;
+            }
+            /* --- indice hors bornes : on redemande --- */
+            if (idx >= displayedCards.size()) {
+                System.out.println("Indice invalide, réessayez.\n");
+                continue;
+            }
+
+            /* --- récupération de la carte choisie --- */
+            var chosen = displayedCards.get(idx);
+            var cost = chosen.price();
+
+            /* --- vérification du porte-monnaie --- */
+            if (!p.getWallet().canAfford(cost)) {
+                System.out.println("Pas assez de gemmes pour cette carte, "
+                        + "choisissez-en une autre.\n");
+                continue;                       // on repart au début du while
+            }
+
+            /* --------- transaction validée --------- */
+            p.getWallet().pay(cost);            // débite les gemmes
+            displayedCards.remove(idx);         // enlève de l’étalage
+            p.addCard(chosen);                  // ajoute à la main
+            System.out.println("Carte achetée : " + chosen + "\n");
+
+            /* --------- remplacement dans l’étalage --------- */
+            if (!cards.isEmpty()) {
+                displayedCards.add(cards.remove(0));
+            }
             return;
-        }
-
-        // 4. on transfère la carte vers la main du joueur
-        var picked = displayedCards.remove(idx);
-        p.addCard(picked);
-        System.out.println("→ Carte piochée : " + picked);
-
-        // 5. on complète l’étalage si le paquet n’est pas vide
-        if (!cards.isEmpty()) {
-            displayedCards.add(cards.remove(0));
         }
     }
 
     private void showWallet(Player p) {
         showHeader("Votre porte-monnaie");
         for (var t : GemToken.values()) {
-            System.out.printf("  %-8s : %d%n", t, p.getWallet().get(t));
+            System.out.printf("  %-8s : %d%n", t, p.getWallet().getGems().get(t));
         }
         System.out.println();
     }
@@ -150,7 +174,7 @@ public class Game {
 
         try (var scanner = new Scanner(System.in)) {          // auto-close
             while (!gameOver) {
-                for (Player current : players) {
+                for (var current : players) {
                     System.out.println("\nTour de " + current);
                     showHeader("Cartes visibles");
                     showCards(displayedCards);
@@ -158,11 +182,14 @@ public class Game {
                     showHeader("Actions");
                     System.out.println("1. Piocher une carte");
                     System.out.println("2. Jouer une carte");
+                    System.out.println("3. Prendre des gemmes");
                     int action = askInt("Votre choix : ");
 
                     switch (action) {
                         case 1 -> drawCard(current);
                         case 2 -> playCard(current);
+                        // 3ème action à implémenter
+                        // case 3 -> pickGems(current);
                         default -> System.out.println("Action inconnue.");
                     }
 
@@ -184,7 +211,7 @@ public class Game {
     }
 
     // Ajout d'un joueur dans la partie
-    public void addPlayer(Player player){
+    public void addPlayer(Player player) {
         Objects.requireNonNull(player);
         players.add(player);
     }

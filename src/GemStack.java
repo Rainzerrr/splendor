@@ -59,4 +59,23 @@ public class GemStack {
 
         return builder.toString();
     }
+
+    /** Retourne {@code true} si la pile contient au moins les quantités
+     *  demandées pour chaque couleur du coût ; {@code false} sinon. */
+    public boolean canAfford(Map<GemToken,Integer> cost) {
+        for (var e : cost.entrySet()) {
+            if (getAmount(e.getKey()) < e.getValue())
+                return false;
+        }
+        return true;
+    }
+
+    /** Décrémente la pile selon le coût.  Lève une
+     *  {@link IllegalStateException} si la pile est insuffisante. */
+    public void pay(Map<GemToken,Integer> cost) {
+        if (!canAfford(cost)) {
+            throw new IllegalStateException("Pas assez de gemmes pour payer");
+        }
+        cost.forEach(this::remove);   // <-- ré-utilise remove(token,amount)
+    }
 }
