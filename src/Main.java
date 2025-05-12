@@ -9,7 +9,7 @@ public class Main {
         System.out.println("Let the game begin !");
         Game game = new Game(2);
         // Ajout des joueurs de la partie
-        var player1 = new Player("Mounir");
+        var player1 = new Player("Rayan");
         var player2 = new Player("Mounir");
         game.addPlayer(player1);
         game.addPlayer(player2);

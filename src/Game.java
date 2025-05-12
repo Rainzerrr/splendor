@@ -8,7 +8,6 @@ public class Game {
     private boolean gameOver;
     private ArrayList<DevelopmentCard> displayedCards;
 
-
     public Game(int playerNumber) {
         players = new ArrayList<>();
         bank = new GemStack(7);
@@ -158,10 +157,95 @@ public class Game {
         }
     }
 
+    private void pickTwiceSameGem(Player p) {
+        Objects.requireNonNull(p);
+        showWallet(p);
+        showBank();
+        System.out.println("Vous pouvez récupérer deux gemmes de la même couleur, si > 4 : ");
+        System.out.println("1. Ruby");
+        System.out.println("2. Emerald");
+        System.out.println("3. Diamond");
+        System.out.println("4. Sapphire");
+        System.out.println("5. Onyx");
+
+        int action = askInt("Votre choix : ");
+
+        switch (action) {
+            case 1 -> updateUserWalletForSameGem(p, GemToken.RUBY);
+            case 2 -> updateUserWalletForSameGem(p, GemToken.EMERALD);
+            case 3 -> updateUserWalletForSameGem(p, GemToken.DIAMOND);
+            case 4 -> updateUserWalletForSameGem(p, GemToken.SAPPHIRE);
+            case 5 -> updateUserWalletForSameGem(p, GemToken.ONYX);
+            default -> System.out.println("Action inconnue.");
+        }
+    }
+
+    private void updateUserWalletForSameGem(Player p, GemToken token) {
+        if(bank.getAmount(token) >= 4) {
+            p.getWallet().add(token, 2);
+            bank.remove(token, 2);
+            showWallet(p);
+        }
+        else{
+            System.out.println("Coup invalide, car le nombre de gemmes disponible est inférieur à 4 pour les " + token);
+        }
+    }
+
+    private void updateUserWalletForDifferentGems(Player p, GemToken token, List<GemToken> pickedGems, int resetAction) {
+        if(pickedGems.contains(token)) {
+            System.out.println("Vous avez déjà récupéré une gemme " + token);
+            resetAction--;
+            return;
+        }
+        if(bank.getAmount(token) > 0) {
+            pickedGems.add(token);
+            p.getWallet().add(token, 1);
+            bank.remove(token, 1);
+            showWallet(p);
+        }
+        else{
+            System.out.println("La banque ne contient plus de gemme " + token);
+            resetAction--;
+        }
+    }
+
+
+    private void pickThreeDifferentGems(Player p) {
+        Objects.requireNonNull(p);
+        List<GemToken> pickedGems = new ArrayList<>();
+        for(int i = 0; i < 3; i++) {
+            showWallet(p);
+            showBank();
+            System.out.println("Vous pouvez récupérer trois gemmes différentes dans la banque :");
+            System.out.println("1. Ruby");
+            System.out.println("2. Emerald");
+            System.out.println("3. Diamond");
+            System.out.println("4. Sapphire");
+            System.out.println("5. Onyx");
+            int action = askInt("Votre choix (" + (i+1) + "/3) : ");
+            switch (action) {
+                case 1 -> updateUserWalletForDifferentGems(p, GemToken.RUBY, pickedGems, i);
+                case 2 -> updateUserWalletForDifferentGems(p, GemToken.EMERALD, pickedGems, i);
+                case 3 -> updateUserWalletForDifferentGems(p, GemToken.DIAMOND, pickedGems, i);
+                case 4 -> updateUserWalletForDifferentGems(p, GemToken.SAPPHIRE, pickedGems, i);
+                case 5 -> updateUserWalletForDifferentGems(p, GemToken.ONYX, pickedGems, i);
+                default -> System.out.println("Action inconnue.");
+            }
+        }
+    }
+
     private void showWallet(Player p) {
         showHeader("Votre porte-monnaie");
         for (var t : GemToken.values()) {
             System.out.printf("  %-8s : %d%n", t, p.getWallet().getGems().get(t));
+        }
+        System.out.println();
+    }
+
+    private void showBank() {
+        showHeader("Etat de la banque :");
+        for (var t : GemToken.values()) {
+            System.out.printf("  %-8s : %d%n", t, bank.getGems().get(t));
         }
         System.out.println();
     }
@@ -182,14 +266,16 @@ public class Game {
                     showHeader("Actions");
                     System.out.println("1. Piocher une carte");
                     System.out.println("2. Jouer une carte");
-                    System.out.println("3. Prendre des gemmes");
+                    System.out.println("3. Prendre deux gemmes de la même couleur");
+                    System.out.println("4. Prendre trois gemmes de couleurs différentes");
+
                     int action = askInt("Votre choix : ");
 
                     switch (action) {
                         case 1 -> drawCard(current);
                         case 2 -> playCard(current);
-                        // 3ème action à implémenter
-                        // case 3 -> pickGems(current);
+                        case 3 -> pickTwiceSameGem(current);
+                        case 4 -> pickThreeDifferentGems(current);
                         default -> System.out.println("Action inconnue.");
                     }
 
