@@ -6,7 +6,6 @@ public class Main {
     public static void main(String[] args) {
         //TIP Press <shortcut actionId="ShowIntentionActions"/> with your caret at the highlighted text
         // to see how IntelliJ IDEA suggests fixing it.
-        System.out.println("Let the game begin !");
         Game game = new Game(2);
         // Ajout des joueurs de la partie
         var player1 = new Player("Rayan");

@@ -53,12 +53,13 @@ public class GemStack {
                 builder.append(", ");
             }
             builder.append(entry.getKey().name())
-                    .append("->")
-                    .append(entry.getValue());
+                    .append("(")
+                    .append(entry.getValue()).append(")");
         }
 
         return builder.toString();
     }
+
 
     /** Retourne {@code true} si la pile contient au moins les quantités
      *  demandées pour chaque couleur du coût ; {@code false} sinon. */

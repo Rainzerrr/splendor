@@ -1,5 +1,6 @@
 import java.util.*;
 import java.util.Scanner;
+import java.util.stream.Collectors;
 
 public class Game {
     private final List<Player> players;
@@ -36,19 +37,13 @@ public class Game {
     }
 
     private void displayBoard() {
-        System.out.println("---------------------------------------------------------");
-        System.out.println("Board");
-        System.out.println("---------------------------------------------------------");
-        System.out.println(bank);
-        System.out.println("---------------------------------------------------------");
+        showBank();
 
+        showHeader("CARTES DISPONIBLES");
         for (var i = 0; i < displayedCards.size(); i++) {
             System.out.println((i + 1) + " - " + displayedCards.get(i).toString());
-//            if(i%4==3 && i<displayedCards.size()-1){
-//                System.out.println();
-//            }
         }
-        System.out.println("---------------------------------------------------------");
+        System.out.println();
     }
 
     public void displayRanking() {
@@ -59,9 +54,7 @@ public class Game {
     }
 
     private void showHeader(String title) {
-        System.out.println("------------------");
-        System.out.println(title);
-        System.out.println("------------------");
+        System.out.println("[" + title + "]");
     }
 
     private void showCards(List<DevelopmentCard> cards) {
@@ -162,11 +155,7 @@ public class Game {
         showWallet(p);
         showBank();
         System.out.println("Vous pouvez récupérer deux gemmes de la même couleur, si > 4 : ");
-        System.out.println("1. Ruby");
-        System.out.println("2. Emerald");
-        System.out.println("3. Diamond");
-        System.out.println("4. Sapphire");
-        System.out.println("5. Onyx");
+        System.out.println("1. Ruby, 2. Emerald, 3. Diamond, 4. Sapphire, 5. Onyx");
 
         int action = askInt("Votre choix : ");
 
@@ -184,6 +173,8 @@ public class Game {
         if(bank.getAmount(token) >= 4) {
             p.getWallet().add(token, 2);
             bank.remove(token, 2);
+
+            System.out.println("\nDeux jetons " + token + " ont été ajoutés à vos jetons !\n");
             showWallet(p);
         }
         else{
@@ -191,21 +182,18 @@ public class Game {
         }
     }
 
-    private void updateUserWalletForDifferentGems(Player p, GemToken token, List<GemToken> pickedGems, int resetAction) {
+    private void updateUserWalletForDifferentGems(Player p, GemToken token, List<GemToken> pickedGems) {
         if(pickedGems.contains(token)) {
             System.out.println("Vous avez déjà récupéré une gemme " + token);
-            resetAction--;
             return;
         }
         if(bank.getAmount(token) > 0) {
             pickedGems.add(token);
             p.getWallet().add(token, 1);
             bank.remove(token, 1);
-            showWallet(p);
         }
         else{
             System.out.println("La banque ne contient plus de gemme " + token);
-            resetAction--;
         }
     }
 
@@ -213,64 +201,53 @@ public class Game {
     private void pickThreeDifferentGems(Player p) {
         Objects.requireNonNull(p);
         List<GemToken> pickedGems = new ArrayList<>();
+        showBank();
+        showWallet(p);
+        System.out.println("Vous pouvez récupérer trois gemmes différentes dans la banque :");
+        System.out.println("1. Ruby, 2. Emerald, 3. Diamond, 4. Sapphire, 5. Onyx");
         for(int i = 0; i < 3; i++) {
-            showWallet(p);
-            showBank();
-            System.out.println("Vous pouvez récupérer trois gemmes différentes dans la banque :");
-            System.out.println("1. Ruby");
-            System.out.println("2. Emerald");
-            System.out.println("3. Diamond");
-            System.out.println("4. Sapphire");
-            System.out.println("5. Onyx");
             int action = askInt("Votre choix (" + (i+1) + "/3) : ");
             switch (action) {
-                case 1 -> updateUserWalletForDifferentGems(p, GemToken.RUBY, pickedGems, i);
-                case 2 -> updateUserWalletForDifferentGems(p, GemToken.EMERALD, pickedGems, i);
-                case 3 -> updateUserWalletForDifferentGems(p, GemToken.DIAMOND, pickedGems, i);
-                case 4 -> updateUserWalletForDifferentGems(p, GemToken.SAPPHIRE, pickedGems, i);
-                case 5 -> updateUserWalletForDifferentGems(p, GemToken.ONYX, pickedGems, i);
+                case 1 -> updateUserWalletForDifferentGems(p, GemToken.RUBY, pickedGems);
+                case 2 -> updateUserWalletForDifferentGems(p, GemToken.EMERALD, pickedGems);
+                case 3 -> updateUserWalletForDifferentGems(p, GemToken.DIAMOND, pickedGems);
+                case 4 -> updateUserWalletForDifferentGems(p, GemToken.SAPPHIRE, pickedGems);
+                case 5 -> updateUserWalletForDifferentGems(p, GemToken.ONYX, pickedGems);
                 default -> System.out.println("Action inconnue.");
             }
         }
+        System.out.println("\nLes jetons " + pickedGems.stream().map(Enum::name).collect(Collectors.joining(", ")) + " ont bien été ajoutés à vos jetons !\n");
     }
 
     private void showWallet(Player p) {
-        showHeader("Votre porte-monnaie");
-        for (var t : GemToken.values()) {
-            System.out.printf("  %-8s : %d%n", t, p.getWallet().getGems().get(t));
-        }
-        System.out.println();
+        showHeader("VOS JETONS");
+        System.out.println(p.getWallet() + "\n");
     }
 
     private void showBank() {
-        showHeader("Etat de la banque :");
-        for (var t : GemToken.values()) {
-            System.out.printf("  %-8s : %d%n", t, bank.getGems().get(t));
-        }
-        System.out.println();
+        showHeader("JETONS DISPONIBLES");
+        System.out.println(bank + "\n");
     }
 
     public void launch() {
         initializeCards();
         shuffleCards();
         displayedCards = new ArrayList<>(cards.subList(0, 4));
-        displayBoard();
+        System.out.println("Let the game begin !\n");
 
         try (var scanner = new Scanner(System.in)) {          // auto-close
             while (!gameOver) {
                 for (var current : players) {
-                    System.out.println("\nTour de " + current);
-                    showHeader("Cartes visibles");
-                    showCards(displayedCards);
-
-                    showHeader("Actions");
+                    displayBoard();
+                    System.out.println(current.toString() + "\n");
+                    showHeader("ACTIONS");
                     System.out.println("1. Piocher une carte");
                     System.out.println("2. Jouer une carte");
                     System.out.println("3. Prendre deux gemmes de la même couleur");
                     System.out.println("4. Prendre trois gemmes de couleurs différentes");
 
                     int action = askInt("Votre choix : ");
-
+                    System.out.println();
                     switch (action) {
                         case 1 -> drawCard(current);
                         case 2 -> playCard(current);
@@ -282,6 +259,7 @@ public class Game {
                     if (current.getNbCards() >= 15) {
                         gameOver = true;
                     }
+                    System.out.println("----------------------------------------\n");
                 }
             }
         }
