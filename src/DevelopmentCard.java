@@ -1,6 +1,7 @@
 import java.util.EnumMap;
 import java.util.Map;
 import java.util.Objects;
+import java.util.stream.Collectors;
 
 public record DevelopmentCard(EnumMap<GemToken, Integer> price, GemToken bonus, Integer prestigeScore) {
     public DevelopmentCard{
@@ -13,19 +14,11 @@ public record DevelopmentCard(EnumMap<GemToken, Integer> price, GemToken bonus, 
 
     @Override
     public String toString() {
-        StringBuilder priceBuilder = new StringBuilder("{");
+        String priceStr = price.entrySet().stream()
+                .map(entry -> entry.getValue() + " " + entry.getKey())
+                .collect(Collectors.joining(", ", "{", "}"));
 
-        boolean first = true;
-        for (Map.Entry<GemToken, Integer> entry : price.entrySet()) {
-            if (!first) {
-                priceBuilder.append(", ");
-            }
-            priceBuilder.append(entry.getValue()).append(" ").append(entry.getKey());
-            first = false;
-        }
-        priceBuilder.append("}");
-
-        return "[Price: " + priceBuilder +
+        return "[Price: " + priceStr +
                 ", Bonus: " + bonus +
                 ", Prestige: " + prestigeScore + "]";
     }

@@ -1,6 +1,7 @@
 import java.util.EnumMap;
 import java.util.Map;
 import java.util.Objects;
+import java.util.stream.Collectors;
 
 /*
  * GemStack class
@@ -33,7 +34,7 @@ public class GemStack {
         if (amount > getAmount(token)) {
             throw new IllegalArgumentException("The amount of gems to remove is greater than the amount in the GemStack");
         }
-        gems.put(token, gems.getOrDefault(token, 0) - amount);
+        gems.compute(token, (k, v) -> v == null ? 0 : v - amount);
     }
 
     public void resetGame() {
@@ -46,17 +47,27 @@ public class GemStack {
 
     @Override
     public String toString() {
-        StringBuilder builder = new StringBuilder();
-        int i = 0;
-        for (Map.Entry<GemToken, Integer> entry : gems.entrySet()) {
-            if (i++ > 0) {
-                builder.append(", ");
-            }
-            builder.append(entry.getKey().name())
-                    .append("->")
-                    .append(entry.getValue());
-        }
+        return gems.entrySet().stream()
+                .map(entry -> entry.getKey().name() + "(" + entry.getValue() + ")")
+                .collect(Collectors.joining(", "));
+    }
 
-        return builder.toString();
+    /** Retourne {@code true} si la pile contient au moins les quantités
+     *  demandées pour chaque couleur du coût ; {@code false} sinon. */
+    public boolean canAfford(Map<GemToken,Integer> cost) {
+        for (var e : cost.entrySet()) {
+            if (getAmount(e.getKey()) < e.getValue())
+                return false;
+        }
+        return true;
+    }
+
+    /** Décrémente la pile selon le coût.  Lève une
+     *  {@link IllegalStateException} si la pile est insuffisante. */
+    public void pay(Map<GemToken,Integer> cost) {
+        if (!canAfford(cost)) {
+            throw new IllegalStateException("Pas assez de gemmes pour payer");
+        }
+        cost.forEach(this::remove);
     }
 }
