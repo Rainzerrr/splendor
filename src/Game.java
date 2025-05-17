@@ -10,6 +10,9 @@ public class Game {
     private ArrayList<DevelopmentCard> displayedCards;
 
     public Game(int playerNumber) {
+        if (playerNumber < 2) {
+            throw new IllegalArgumentException("Must have at least 2 players");
+        }
         players = new ArrayList<>();
         bank = new GemStack(7);
         cards = new ArrayList<>();
@@ -111,7 +114,7 @@ public class Game {
             showHeader("Cartes disponibles à l'achat");
             showCards(displayedCards);
 
-            int idx = askInt("Indice de la carte (1-%d, 0 pour annuler) : "
+            var idx = askInt("Indice de la carte (1-%d, 0 pour annuler) : "
                     .formatted(displayedCards.size())) - 1;
 
             /* --- 0 → on quitte la méthode sans rien changer --- */
@@ -157,7 +160,7 @@ public class Game {
         System.out.println("Vous pouvez récupérer deux gemmes de la même couleur, si > 4 : ");
         System.out.println("1. Ruby, 2. Emerald, 3. Diamond, 4. Sapphire, 5. Onyx");
 
-        int action = askInt("Votre choix : ");
+        var action = askInt("Votre choix : ");
 
         switch (action) {
             case 1 -> updateUserWalletForSameGem(p, GemToken.RUBY);
@@ -170,6 +173,8 @@ public class Game {
     }
 
     private void updateUserWalletForSameGem(Player p, GemToken token) {
+        Objects.requireNonNull(p);
+        Objects.requireNonNull(token);
         if(bank.getAmount(token) >= 4) {
             p.getWallet().add(token, 2);
             bank.remove(token, 2);
@@ -182,41 +187,55 @@ public class Game {
         }
     }
 
-    private void updateUserWalletForDifferentGems(Player p, GemToken token, List<GemToken> pickedGems) {
-        if(pickedGems.contains(token)) {
-            System.out.println("Vous avez déjà récupéré une gemme " + token);
-            return;
-        }
-        if(bank.getAmount(token) > 0) {
-            pickedGems.add(token);
-            p.getWallet().add(token, 1);
-            bank.remove(token, 1);
-        }
-        else{
-            System.out.println("La banque ne contient plus de gemme " + token);
-        }
-    }
-
-
     private void pickThreeDifferentGems(Player p) {
         Objects.requireNonNull(p);
+
         List<GemToken> pickedGems = new ArrayList<>();
         showBank();
         showWallet(p);
         System.out.println("Vous pouvez récupérer trois gemmes différentes dans la banque :");
         System.out.println("1. Ruby, 2. Emerald, 3. Diamond, 4. Sapphire, 5. Onyx");
-        for(int i = 0; i < 3; i++) {
-            int action = askInt("Votre choix (" + (i+1) + "/3) : ");
-            switch (action) {
-                case 1 -> updateUserWalletForDifferentGems(p, GemToken.RUBY, pickedGems);
-                case 2 -> updateUserWalletForDifferentGems(p, GemToken.EMERALD, pickedGems);
-                case 3 -> updateUserWalletForDifferentGems(p, GemToken.DIAMOND, pickedGems);
-                case 4 -> updateUserWalletForDifferentGems(p, GemToken.SAPPHIRE, pickedGems);
-                case 5 -> updateUserWalletForDifferentGems(p, GemToken.ONYX, pickedGems);
-                default -> System.out.println("Action inconnue.");
+
+        Map<Integer, GemToken> actionToGem = Map.of(
+                1, GemToken.RUBY,
+                2, GemToken.EMERALD,
+                3, GemToken.DIAMOND,
+                4, GemToken.SAPPHIRE,
+                5, GemToken.ONYX
+        );
+
+        var pickedCount = 0;
+        while (pickedCount < 3) {
+            var action = askInt("Votre choix (" + (pickedCount + 1) + "/3) : ");
+            var maybeToken = Optional.ofNullable(actionToGem.get(action));
+
+            if (maybeToken.isEmpty()) {
+                System.out.println("Action inconnue.");
+                continue; // ne pas avancer le compteur
             }
+
+            GemToken token = maybeToken.get();
+
+            if (pickedGems.stream().anyMatch(t -> t == token)) {
+                System.out.println("Gemme déjà récupérée: " + token);
+                continue;
+            }
+
+            if (bank.getAmount(token) <= 0) {
+                System.out.println("Plus de gemmes: " + token);
+                continue;
+            }
+
+            // Si on arrive ici, c’est valide
+            pickedGems.add(token);
+            p.getWallet().add(token, 1);
+            bank.remove(token, 1);
+            pickedCount++;
         }
-        System.out.println("\nLes jetons " + pickedGems.stream().map(Enum::name).collect(Collectors.joining(", ")) + " ont bien été ajoutés à vos jetons !\n");
+
+        System.out.println("\nLes jetons " + pickedGems.stream()
+                .map(Enum::name)
+                .collect(Collectors.joining(", ")) + " ont bien été ajoutés à vos jetons !\n");
     }
 
     private void showWallet(Player p) {
