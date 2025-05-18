@@ -2,13 +2,20 @@ import java.util.*;
 
 public class Player {
     private final String name;
+    private final int age;
     private final GemStack wallet;
-    private final ArrayList<DevelopmentCard> cards;
+    private final List<DevelopmentCard> cards;
+    private final List<DevelopmentCard> reservedCards;
 
-    public Player(String name) {
+    public Player(String name, int age) {
+        if (age < 0 || age > 100) {
+            throw new IllegalArgumentException("Entrez un âge correct.");
+        }
         this.wallet = new GemStack(4);
         this.cards = new ArrayList<>();
+        this.reservedCards = new ArrayList<>();
         this.name = name;
+        this.age = age;
     }
 
     public GemStack getWallet() {
@@ -45,6 +52,22 @@ public class Player {
             score += card.prestigeScore();
         }
         return score;
+    }
+
+    public void reserveCard(DevelopmentCard card) {
+        reservedCards.add(card);
+    }
+
+    public List<DevelopmentCard> getReservedCards() {
+        return reservedCards;
+    }
+
+    public void removeReservedCard(DevelopmentCard card) {
+        reservedCards.remove(card);
+    }
+
+    public int getNbReservedCards() {
+        return reservedCards.size();
     }
 
     @Override
@@ -107,5 +130,9 @@ public class Player {
         Objects.requireNonNull(c);
         wallet.pay(c.price());
         cards.remove(c);
+    }
+
+    public int getAge() {
+        return age;
     }
 }
