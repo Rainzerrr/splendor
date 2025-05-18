@@ -2,13 +2,13 @@ import java.util.EnumMap;
 import java.util.Map;
 import java.util.Objects;
 
-public record DevelopmentCard(EnumMap<GemToken, Integer> price, GemToken bonus, int prestigeScore) {
-    public DevelopmentCard{
+public record Noble(String name, EnumMap<GemToken, Integer> price, int prestigeScore) {
+    public Noble{
+        Objects.requireNonNull(name);
+        Objects.requireNonNull(price);
         if(prestigeScore < 0){
             throw new IllegalArgumentException("The prestige score must be positive");
         }
-        Objects.requireNonNull(price);
-        Objects.requireNonNull(bonus);
     }
 
     @Override
@@ -25,8 +25,7 @@ public record DevelopmentCard(EnumMap<GemToken, Integer> price, GemToken bonus, 
         }
         priceBuilder.append("}");
 
-        return "[Price: " + priceBuilder +
-                ", Bonus: " + bonus +
+        return name + "[Price: " + priceBuilder +
                 ", Prestige: " + prestigeScore + "]";
     }
 }

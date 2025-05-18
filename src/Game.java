@@ -71,29 +71,7 @@ public class Game {
         return scanner.nextInt();
     }
 
-    private void playCard(Player p) {
-        Objects.requireNonNull(p);
-        if (p.getCards().isEmpty()) {
-            System.out.println("Vous n'avez pas de carte à jouer");
-            return;
-        }
-
-        var hand = p.getCards();
-        showHeader("Cartes que vous disposez : ");
-        showCards(hand);
-
-        System.out.println("Choisissez une carte à jouer : (0-" + (hand.size() - 1) + ")");
-        var cardIndex = askInt("Entrez un chiffre : ");
-
-        if (cardIndex >= 0 && cardIndex < hand.size()) {
-            var playedCard = hand.get(cardIndex);
-            p.removeCard(playedCard);
-        } else {
-            System.out.println("La carte choisie n'existe pas");
-        }
-    }
-
-    private void drawCard(Player p) {
+    private void buyCard(Player p) {
         Objects.requireNonNull(p);
 
         /* --------- plus de cartes sur l’étalage ? --------- */
@@ -241,22 +219,20 @@ public class Game {
                     displayBoard();
                     System.out.println(current.toString() + "\n");
                     showHeader("ACTIONS");
-                    System.out.println("1. Piocher une carte");
-                    System.out.println("2. Jouer une carte");
-                    System.out.println("3. Prendre deux gemmes de la même couleur");
-                    System.out.println("4. Prendre trois gemmes de couleurs différentes");
+                    System.out.println("1. Acheter une carte de développement");
+                    System.out.println("2. Prendre deux gemmes de la même couleur");
+                    System.out.println("3. Prendre trois gemmes de couleurs différentes");
 
                     int action = askInt("Votre choix : ");
                     System.out.println();
                     switch (action) {
-                        case 1 -> drawCard(current);
-                        case 2 -> playCard(current);
-                        case 3 -> pickTwiceSameGem(current);
-                        case 4 -> pickThreeDifferentGems(current);
+                        case 1 -> buyCard(current);
+                        case 2 -> pickTwiceSameGem(current);
+                        case 3 -> pickThreeDifferentGems(current);
                         default -> System.out.println("Action inconnue.");
                     }
 
-                    if (current.getNbCards() >= 15) {
+                    if (current.getPrestigeScore() >= 15) {
                         gameOver = true;
                     }
                     System.out.println("----------------------------------------\n");
@@ -265,13 +241,6 @@ public class Game {
         }
 
         displayRanking();
-    }
-
-    public void launchTest() {
-        System.out.println("Let the game begin !!!!!");
-        shuffleCards();
-        displayedCards = new ArrayList<>(cards.subList(0, 4));
-        displayBoard();
     }
 
     // Ajout d'un joueur dans la partie

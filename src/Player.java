@@ -3,11 +3,13 @@ import java.util.*;
 public class Player {
     private final String name;
     private final GemStack wallet;
-    private final ArrayList<DevelopmentCard> cards;
+    private final ArrayList<DevelopmentCard> reservedCards;
+    private final ArrayList<DevelopmentCard> purchasedCards;
 
     public Player(String name) {
         this.wallet = new GemStack(4);
-        this.cards = new ArrayList<>();
+        this.purchasedCards = new ArrayList<>();
+        this.reservedCards = new ArrayList<>();
         this.name = name;
     }
 
@@ -15,33 +17,33 @@ public class Player {
         return wallet;
     }
 
-    public List<DevelopmentCard> getCards() {
-        return cards;
+    public List<DevelopmentCard> getPurchasedCards() {
+        return purchasedCards;
     }
 
     public void addCard(DevelopmentCard card) {
         Objects.requireNonNull(card);
-        cards.add(card);
+        purchasedCards.add(card);
     }
 
     public void removeCard(DevelopmentCard card) {
         Objects.requireNonNull(card);
-        cards.remove(card);
+        purchasedCards.remove(card);
     }
 
     public boolean hasCard(DevelopmentCard card) {
         Objects.requireNonNull(card);
-        return cards.contains(card);
+        return purchasedCards.contains(card);
     }
 
     public void resetGame() {
         wallet.resetGame();
-        cards.clear();
+        purchasedCards.clear();
     }
 
     public int getPrestigeScore() {
         int score = 0;
-        for (DevelopmentCard card : cards) {
+        for (DevelopmentCard card : purchasedCards) {
             score += card.prestigeScore();
         }
         return score;
@@ -63,12 +65,12 @@ public class Player {
 
         // Bonus: TYPE(count)...
         sb.append("Bonus: ");
-        if (cards.isEmpty()) {
+        if (purchasedCards.isEmpty()) {
             sb.append("Aucun");
         } else {
             // Compter les bonus par type
             Map<GemToken, Integer> bonusCounts = new HashMap<>();
-            for (DevelopmentCard card : cards) {
+            for (DevelopmentCard card : purchasedCards) {
                 GemToken bonus = card.bonus();
                 bonusCounts.put(bonus, bonusCounts.getOrDefault(bonus, 0) + 1);
             }
@@ -94,10 +96,6 @@ public class Player {
         return sb.toString();
     }
 
-    public int getNbCards() {
-        return cards.size();
-    }
-
     public boolean canBuy(DevelopmentCard c) {
         Objects.requireNonNull(c);
         return wallet.canAfford(c.price());
@@ -106,6 +104,6 @@ public class Player {
     public void buy(DevelopmentCard c) {
         Objects.requireNonNull(c);
         wallet.pay(c.price());
-        cards.remove(c);
+        purchasedCards.remove(c);
     }
 }
