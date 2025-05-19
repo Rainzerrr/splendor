@@ -21,10 +21,16 @@ public class Player {
         return purchasedCards;
     }
 
-    public void addCard(DevelopmentCard card) {
+    public void addPurchasedCard(DevelopmentCard card) {
         Objects.requireNonNull(card);
         purchasedCards.add(card);
     }
+
+    public void addReservedCard(DevelopmentCard card) {
+        Objects.requireNonNull(card);
+        reservedCards.add(card);
+    }
+
 
     public void removeCard(DevelopmentCard card) {
         Objects.requireNonNull(card);
