@@ -6,63 +6,16 @@ public interface Game {
     void initializeCards();
     void launch();
     void showMenu(Player p);
+    void showCards();
 
     default void addPlayer(Player p){
         getPlayers().add(p);
     }
 
-
     default int askInt(String prompt) {
         Scanner scanner = new Scanner(System.in);
         System.out.print(prompt);
         return scanner.nextInt();
-    }
-
-    default boolean buyCard(Player p, List<DevelopmentCard> cards, List<DevelopmentCard> displayedCards) {
-        if (displayedCards.isEmpty()) {
-            System.out.println("Aucune carte n'est actuellement proposée.");
-            showMenu(p);
-            return false;
-        }
-
-        showWallet(p);
-        showHeader("CARTES DISPONIBLES À L'ACHAT");
-        showCards(displayedCards);
-
-        while (true) {
-            try{
-                var idx = askInt("Indice de la carte (1-%d, 0 pour annuler) : "
-                    .formatted(displayedCards.size())) - 1;
-
-                if (idx < 0) {
-                    System.out.println("Achat annulé.\n");
-                    return false;
-                }
-                if (idx >= displayedCards.size()) {
-                    System.out.println("Indice invalide, réessayez.");
-                    continue;
-                }
-
-                var chosen = displayedCards.get(idx);
-                if (!p.getWallet().canAfford(chosen.price())) {
-                    System.out.println("Pas assez de gemmes pour cette carte, choisissez-en une autre.");
-                    continue;
-                }
-
-                p.getWallet().pay(chosen.price());
-                displayedCards.remove(idx);
-                p.addPurchasedCard(chosen);
-                System.out.println("Carte achetée : " + chosen + "\n");
-
-                if (!cards.isEmpty()) {
-                    displayedCards.add(cards.removeFirst());
-                }
-                return true;
-            }catch (InputMismatchException e){
-                System.out.println("Erreur : Veuillez entrer un chiffre valide.");
-            }
-
-        }
     }
 
     default boolean pickTwiceSameGem(Player player, GemStack bank) {
@@ -185,11 +138,5 @@ public interface Game {
         System.out.println("JETONS DISPONIBLES :\n" + bank + "\n");
     }
 
-    default void showCards(List<DevelopmentCard> cards) {
-        Objects.requireNonNull(cards);
-        for (int i = 0; i < cards.size(); i++) {
-            System.out.println((i + 1) + " - " + cards.get(i));
-        }
-        System.out.println();
-    }
+
 }
