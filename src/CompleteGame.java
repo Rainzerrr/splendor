@@ -178,59 +178,88 @@ public class CompleteGame implements Game {
         }
     }
 
-   private boolean reserveCard(Player p) {
+    private boolean reserveCard(Player p) {
         Objects.requireNonNull(p, "Le joueur ne peut pas être null");
 
-        if (displayedCards.isEmpty()) {
-            System.out.println("Aucune carte disponible à la réservation.\n");
+        // Vérification des cartes disponibles
+        boolean noCardsAvailable = true;
+        for (List<DevelopmentCard> cards : displayedCards.values()) {
+            if (!cards.isEmpty()) {
+                noCardsAvailable = false;
+                break;
+            }
+        }
+
+        if (noCardsAvailable) {
+            System.out.println("Aucune carte disponible à la réservation.");
+            showMenu(p);
             return false;
         }
 
-        if (p. >= 3) {
-            System.out.println("Vous avez déjà réservé le maximum de 3 cartes.\n");
+        if (p.getReservedCards().size() >= 3) {
+            System.out.println("Limite de réservation atteinte (3 cartes).");
+            showMenu(p);
             return false;
         }
 
         try {
-            showWallet(p);
             showCards();
 
-            int choice = askInt(
-                    "Indice de la carte à réserver (1-%d, 0 pour annuler) : ".formatted(displayedCards.size()),
-                    0,
-                    displayedCards.size()
-            );
+            // Compter le total de cartes disponibles
+            int totalCards = 0;
+            for (List<DevelopmentCard> cards : displayedCards.values()) {
+                totalCards += cards.size();
+            }
+
+            int choice = askInt("Indice (1-%d, 0 pour annuler) : ".formatted(totalCards), 0, totalCards);
 
             if (choice == 0) {
                 System.out.println("Réservation annulée.\n");
                 return false;
             }
 
-            DevelopmentCard selectedCard = displayedCards.remove(choice - 1);
-            p.reserveCard(selectedCard);
+            int currentIndex = 1;
+            for (Map.Entry<Integer, List<DevelopmentCard>> entry : displayedCards.entrySet()) {
+                List<DevelopmentCard> cards = entry.getValue();
+                for (int i = 0; i < cards.size(); i++) {
+                    if (currentIndex == choice) {
+                        DevelopmentCard selectedCard = cards.remove(i);
+                        p.reserveCard(selectedCard);
+                        addGoldTokenToPlayer(p);
+                        updateDisplayedCards();
+                        System.out.printf("Réservation réussie : %s\n", selectedCard);
+                        return true;
+                    }
+                    currentIndex++;
+                }
+            }
 
-            p.add(GemToken.GOLD, 1);
-            updateDisplayedCards();
+            // Si la carte n'a pas été trouvée (ne devrait pas arriver)
+            System.out.println("Carte non trouvée.");
+            return false;
 
-            System.out.printf("Carte réservée avec succès : %s\n\n", selectedCard);
-            return true;
-
-        } catch (IndexOutOfBoundsException e) {
-            System.out.println("Erreur de sélection de carte.\n");
+        } catch (Exception e) {
+            System.out.println("Erreur de sélection : carte invalide\n");
             return false;
         }
     }
 
+
     private void updateDisplayedCards() {
-        if (!cardDecks.isEmpty()) {
-            displayedCards.add(cardDecks.remove(0));
+        for (int level : Arrays.asList(1, 2, 3)) {
+            List<DevelopmentCard> currentDisplay = displayedCards.get(level);
+            List<DevelopmentCard> deck = cardDecks.get(level);
+
+            while (currentDisplay.size() < 4 && !deck.isEmpty()) {
+                currentDisplay.add(deck.removeFirst());
+            }
         }
     }
 
-    private void grantGoldToken(Player p) {
+    private void addGoldTokenToPlayer(Player p) {
         if (bank.remove(GemToken.GOLD, 1)) {
             p.getWallet().add(GemToken.GOLD, 1);
-            System.out.println("Vous avez reçu un jeton or.\n");
+            System.out.println("Jeton or attribué !");
         }
     }
 
@@ -240,26 +269,26 @@ public class CompleteGame implements Game {
         System.out.println("Actions : 1. Acheter | 2. Réserver | 3. 2 gemmes identiques | 4. 3 gemmes différentes");
         System.out.println("Afficher : 5. Nobles | 6. Cartes sur le plateau | 7. Contenu de la banque");
         while (true) {
-                var action = askInt("Votre choix : ", 0, 4);
-                System.out.println();
+            var action = askInt("Votre choix : ", 0, 4);
+            System.out.println();
 
-                boolean actionSuccess = false;
-                switch (action) {
-                    case 1 -> actionSuccess = buyCard(player);
-                    case 2 -> actionSuccess = buyCard(player); // reserveCard()
-                    case 3 -> actionSuccess = pickTwiceSameGem(player, bank);
-                    case 4 -> actionSuccess = pickThreeDifferentGems(player, bank);
-                    default -> System.out.println("Option invalide. Veuillez choisir un nombre entre 1 et 4.\n");
-                }
-
-                if (actionSuccess) {
-                    return; // Action valide, on quitte le menu
-                } else {
-                    System.out.println("Retour au menu.");
-                }
-                System.out.println("Erreur : Veuillez entrer un chiffre valide.\n");
+            boolean actionSuccess = false;
+            switch (action) {
+                case 1 -> actionSuccess = buyCard(player);
+                case 2 -> actionSuccess = reserveCard(player); // reserveCard()
+                case 3 -> actionSuccess = pickTwiceSameGem(player, bank);
+                case 4 -> actionSuccess = pickThreeDifferentGems(player, bank);
+                default -> System.out.println("Option invalide. Veuillez choisir un nombre entre 1 et 4.\n");
             }
+
+            if (actionSuccess) {
+                return; // Action valide, on quitte le menu
+            } else {
+                System.out.println("Retour au menu.");
+            }
+            System.out.println("Erreur : Veuillez entrer un chiffre valide.\n");
         }
+    }
 
     @Override
     public List<Player> getPlayers(){
