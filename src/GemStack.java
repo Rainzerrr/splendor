@@ -23,17 +23,18 @@ public class GemStack {
     public void add(GemToken token, int amount) {
         Objects.requireNonNull(token);
         if (amount < 0) {
-            throw new IllegalArgumentException("The amount of gems to add must be positive");
+            throw new IllegalArgumentException("Le montant des gemmes à ajouter doit être positif");
         }
         gems.put(token, gems.getOrDefault(token, 0) + amount);
     }
 
-    public void remove(GemToken token, int amount){
+    public boolean remove(GemToken token, int amount){
         Objects.requireNonNull(token);
         if (amount > getAmount(token)) {
             throw new IllegalArgumentException("The amount of gems to remove is greater than the amount in the GemStack");
         }
         gems.put(token, gems.getOrDefault(token, 0) - amount);
+        return true;
     }
 
     public void resetGame() {

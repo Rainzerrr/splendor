@@ -25,7 +25,6 @@ public class Player {
         return wallet;
     }
 
-
     public List<DevelopmentCard> getPurchasedCards() {
         return purchasedCards;
     }
@@ -35,11 +34,13 @@ public class Player {
         purchasedCards.add(card);
     }
 
-    public void addReservedCard(DevelopmentCard card) {
-        Objects.requireNonNull(card);
-        reservedCards.add(card);
+    public List<DevelopmentCard> getReservedCards() {
+        return reservedCards;
     }
 
+    public void reserveCard(DevelopmentCard card) {
+        reservedCards.add(card);
+    }
 
     public void removeCard(DevelopmentCard card) {
         Objects.requireNonNull(card);

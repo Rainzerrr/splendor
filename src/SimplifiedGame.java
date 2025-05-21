@@ -67,9 +67,8 @@ public class SimplifiedGame implements Game {
         showCards();
 
         while (true) {
-            try{
                 var idx = askInt("Indice de la carte (1-%d, 0 pour annuler) : "
-                        .formatted(displayedCards.size())) - 1;
+                        .formatted(displayedCards.size()), 0, 12) - 1;
 
                 if (idx < 0) {
                     System.out.println("Achat annulé.\n");
@@ -95,10 +94,6 @@ public class SimplifiedGame implements Game {
                     displayedCards.add(cards.removeFirst());
                 }
                 return true;
-            }catch (InputMismatchException e){
-                System.out.println("Erreur : Veuillez entrer un chiffre valide.");
-            }
-
         }
     }
 
@@ -106,12 +101,10 @@ public class SimplifiedGame implements Game {
 
     public void showMenu(Player player) {
         showHeader("ACTIONS DISPONIBLES");
-        System.out.println("1. Acheter une carte disponible");
-        System.out.println("2. Prendre deux gemmes de la même couleur");
-        System.out.println("3. Prendre trois gemmes de couleurs différentes");
+        System.out.println("Actions : 1. Acheter | 2. Réserver | 3. 2 gemmes identiques | 4. 3 gemmes différentes");
+        System.out.println("Afficher : 5. Nobles | 6. Cartes sur le plateau | 7. Contenu de la banque");
         while (true) {
-            try {
-                var action = askInt("Votre choix : ");
+                var action = askInt("Votre choix : ", 1, 7);
                 System.out.println();
 
                 boolean actionSuccess = false;
@@ -119,6 +112,7 @@ public class SimplifiedGame implements Game {
                     case 1 -> actionSuccess = buyCard(player);
                     case 2 -> actionSuccess = pickTwiceSameGem(player, bank);
                     case 3 -> actionSuccess = pickThreeDifferentGems(player, bank);
+                    case 4 -> {}
                     default -> System.out.println("Option invalide. Veuillez choisir un nombre entre 1 et 3.\n");
                 }
 
@@ -126,9 +120,7 @@ public class SimplifiedGame implements Game {
                     return; // Action valide, on quitte le menu
                 } else {
                     System.out.println("Retour au menu.");
-                }
-            } catch (InputMismatchException e) {
-                System.out.println("Erreur : Veuillez entrer un chiffre valide.\n");
+                    showMenu(player);
             }
         }
     }

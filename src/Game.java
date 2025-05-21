@@ -12,10 +12,24 @@ public interface Game {
         getPlayers().add(p);
     }
 
-    default int askInt(String prompt) {
+    default int askInt(String prompt, int min, int max) {
         Scanner scanner = new Scanner(System.in);
-        System.out.print(prompt);
-        return scanner.nextInt();
+
+        while (true) {
+            System.out.print(prompt);
+
+            try {
+                int input = scanner.nextInt();
+                if (input < min || input > max) {
+                    System.out.println("Veuillez entrer un nombre entre " + min + " et " + max + ".");
+                } else {
+                    return input;
+                }
+            } catch (InputMismatchException e) {
+                System.out.println("Erreur : veuillez entrer un nombre entier.");
+                scanner.nextLine();
+            }
+        }
     }
 
     default boolean pickTwiceSameGem(Player player, GemStack bank) {
@@ -26,7 +40,7 @@ public interface Game {
         System.out.println("0. Annuler et retourner au menu");
         while (true) {
             try {
-                var action = askInt("Votre choix : ");
+                var action = askInt("Votre choix : ", 0, 5);
 
                 if (action == 0) {
                     System.out.println("Action annulée.\n");
@@ -60,7 +74,7 @@ public interface Game {
 
         while (pickedGems.size() < 3) {
             try {
-                int action = askInt("Votre choix (" + (pickedGems.size() + 1) + "/3) : ");
+                int action = askInt("Votre choix (" + (pickedGems.size() + 1) + "/3) : ", 0, 5);
 
                 if (action == 0) {
                     // Remboursement des gemmes déjà prises

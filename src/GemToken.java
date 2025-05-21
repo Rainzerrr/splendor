@@ -3,5 +3,6 @@ public enum GemToken {
     EMERALD,
     DIAMOND,
     SAPPHIRE,
-    ONYX
+    ONYX,
+    GOLD
 }
