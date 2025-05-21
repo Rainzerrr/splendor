@@ -1,5 +1,10 @@
+package splendor.game;
+
+import splendor.tokens.GemStack;
+import splendor.tokens.GemToken;
+import splendor.player.Player;
+
 import java.util.*;
-import java.util.stream.Collectors;
 
 public interface Game {
     List<Player> getPlayers();

@@ -1,14 +1,18 @@
+package splendor.cards;
+
+import splendor.tokens.GemToken;
+
 import java.util.EnumMap;
 import java.util.Map;
 import java.util.Objects;
 
-public record Noble(String name, EnumMap<GemToken, Integer> price, int prestigeScore) {
-    public Noble{
-        Objects.requireNonNull(name);
-        Objects.requireNonNull(price);
+public record DevelopmentCard(EnumMap<GemToken, Integer> price, GemToken bonus, int prestigeScore, int level) {
+    public DevelopmentCard{
         if(prestigeScore < 0){
             throw new IllegalArgumentException("The prestige score must be positive");
         }
+        Objects.requireNonNull(price);
+        Objects.requireNonNull(bonus);
     }
 
     @Override
@@ -25,7 +29,8 @@ public record Noble(String name, EnumMap<GemToken, Integer> price, int prestigeS
         }
         priceBuilder.append("]");
 
-        return  "[Name: " + name + ", Requirement: " + priceBuilder +
+        return "[Price: " + priceBuilder +
+                ", Bonus: " + bonus +
                 ", Prestige: " + prestigeScore + "]";
     }
 }

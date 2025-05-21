@@ -1,5 +1,11 @@
+package splendor.player;
+
+import splendor.cards.DevelopmentCard;
+import splendor.cards.Noble;
+import splendor.tokens.GemStack;
+import splendor.tokens.GemToken;
+
 import java.util.*;
-import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
 public class Player {

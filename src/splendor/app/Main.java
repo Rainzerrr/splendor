@@ -1,3 +1,9 @@
+package splendor.app;
+
+import splendor.game.CompleteGame;
+import splendor.game.SimplifiedGame;
+import splendor.player.Player;
+
 import java.util.InputMismatchException;
 import java.util.Scanner;
 

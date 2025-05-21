@@ -1,3 +1,8 @@
+package splendor.util;
+
+import splendor.tokens.GemToken;
+import splendor.cards.Noble;
+
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;

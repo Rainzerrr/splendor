@@ -1,6 +1,11 @@
+package splendor.game;
+
+import splendor.cards.DevelopmentCard;
+import splendor.tokens.GemStack;
+import splendor.tokens.GemToken;
+import splendor.player.Player;
+
 import java.util.*;
-import java.util.Scanner;
-import java.util.stream.Collectors;
 
 public class SimplifiedGame implements Game {
     private final List<Player> players;
@@ -11,7 +16,7 @@ public class SimplifiedGame implements Game {
 
     public SimplifiedGame(int playerNumber) {
         players = new ArrayList<>();
-        bank = new GemStack(7);
+        bank = new GemStack(7) ;
         cards = new ArrayList<>();
         gameOver = false;
     }

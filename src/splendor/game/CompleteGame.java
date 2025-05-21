@@ -1,3 +1,13 @@
+package splendor.game;
+
+import splendor.app.Main;
+import splendor.cards.*;
+import splendor.player.Player;
+import splendor.tokens.GemStack;
+import splendor.tokens.GemToken;
+import splendor.util.DevelopmentCardLoader;
+import splendor.util.NobleLoader;
+
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.*;
@@ -21,7 +31,7 @@ public class CompleteGame implements Game {
     }
 
     public void initializeNobles() {
-        try (InputStream is = Main.class.getResourceAsStream("nobles.csv")) {
+        try (InputStream is = Main.class.getResourceAsStream("/splendor/resources/nobles.csv")) {
             if (is == null) {
                 throw new RuntimeException("Fichier CSV introuvable ! Vérifiez qu'il est bien dans le même dossier que vos classes.");
             }
@@ -35,7 +45,7 @@ public class CompleteGame implements Game {
 
     @Override
     public void initializeCards() {
-        try (InputStream is = Main.class.getResourceAsStream("cards.csv")) {
+        try (InputStream is = Main.class.getResourceAsStream("/splendor/resources/cards.csv")) {
 
             if (is == null) {
                 throw new RuntimeException("Fichier CSV introuvable ! Vérifiez qu'il est bien dans le même dossier que vos classes.");
@@ -115,6 +125,7 @@ public class CompleteGame implements Game {
                 if (current.getPrestigeScore() >= 15) {
                     gameOver = true;
                 }
+                System.out.println();
                 System.out.println("----------------------------------------\n");
             }
         }
@@ -139,12 +150,6 @@ public class CompleteGame implements Game {
             if (indice == 0) {
                 System.out.println("Achat annulé.\n");
                 return false;
-            }
-
-            // Validation de l'indice
-            if (indice < 1 || indice > 12) {
-                System.out.println("Indice invalide, réessayez.");
-                continue;
             }
 
             int level = (indice - 1) / 4 + 1;
@@ -269,7 +274,7 @@ public class CompleteGame implements Game {
         System.out.println("Actions : 1. Acheter | 2. Réserver | 3. 2 gemmes identiques | 4. 3 gemmes différentes");
         System.out.println("Afficher : 5. Nobles | 6. Cartes sur le plateau | 7. Contenu de la banque");
         while (true) {
-            var action = askInt("Votre choix : ", 0, 4);
+            var action = askInt("Votre choix : ", 0, 7);
             System.out.println();
 
             boolean actionSuccess = false;
@@ -278,15 +283,18 @@ public class CompleteGame implements Game {
                 case 2 -> actionSuccess = reserveCard(player); // reserveCard()
                 case 3 -> actionSuccess = pickTwiceSameGem(player, bank);
                 case 4 -> actionSuccess = pickThreeDifferentGems(player, bank);
-                default -> System.out.println("Option invalide. Veuillez choisir un nombre entre 1 et 4.\n");
+                case 5 -> showNobles();
+                case 6 -> showCards();
+                case 7 -> showBank(bank);
+                default -> System.out.println("Option invalide. Veuillez choisir un nombre entre 1 et 7.\n");
             }
 
             if (actionSuccess) {
                 return; // Action valide, on quitte le menu
             } else {
-                System.out.println("Retour au menu.");
+                showMenu(player);
+                return;
             }
-            System.out.println("Erreur : Veuillez entrer un chiffre valide.\n");
         }
     }
 

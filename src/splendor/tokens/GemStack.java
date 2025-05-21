@@ -1,3 +1,5 @@
+package splendor.tokens;
+
 import java.util.EnumMap;
 import java.util.Map;
 import java.util.Objects;

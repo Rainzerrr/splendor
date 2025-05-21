@@ -1,3 +1,5 @@
+package splendor.tokens;
+
 public enum GemToken {
     RUBY,
     EMERALD,
