@@ -1,6 +1,7 @@
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.*;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 public class CompleteGame implements Game {
@@ -26,11 +27,7 @@ public class CompleteGame implements Game {
             }
             nobles = NobleLoader.loadNoblesFromInputStream(is);
             Collections.shuffle(nobles);
-            nobles.forEach(System.out::println);
             nobles = nobles.subList(0, players.size()+1);
-
-            nobles.forEach(System.out::println);
-
         } catch (IOException e) {
             System.err.println("Erreur de lecture : " + e.getMessage());
         }
@@ -55,9 +52,6 @@ public class CompleteGame implements Game {
             displayedCards.put(2, new ArrayList<>(cardDecks.get(2).subList(0, 4)));
             displayedCards.put(3, new ArrayList<>(cardDecks.get(3).subList(0, 4)));
 
-            // Utilisation des cartes
-//            cards.forEach(System.out::println);
-
         } catch (IOException e) {
             System.err.println("Erreur de lecture : " + e.getMessage());
         }
@@ -80,6 +74,32 @@ public class CompleteGame implements Game {
         System.out.println();
     }
 
+    private void showNobles() {
+        showHeader("Nobles de la partie");
+        nobles.stream().map(Object::toString).forEach(System.out::println);
+        System.out.println();
+    }
+
+    private void updateNoblesForPlayer(Player player) {
+        // Calculer les bonus totaux du joueur
+        EnumMap<GemToken, Integer> playerBonuses = player.getPurchasedCards().stream()
+                .map(DevelopmentCard::bonus)
+                .collect(Collectors.groupingBy(
+                        Function.identity(),
+                        () -> new EnumMap<>(GemToken.class),
+                        Collectors.summingInt(b -> 1)
+                ));
+
+        Optional<Noble> acquiredNoble = nobles.stream()
+                .filter(noble -> noble.price().entrySet().stream()
+                        .allMatch(entry -> playerBonuses.getOrDefault(entry.getKey(), 0) >= entry.getValue()))
+                .findFirst(); // ← On prend le premier au lieu de toList()
+
+        acquiredNoble.ifPresent(noble -> {nobles.remove(noble);
+            System.out.println("Vous venez d'acquérir le noble " + noble.name() + "\n");
+        });
+    }
+
     @Override
     public void launch() {
         initializeCards();
@@ -87,21 +107,23 @@ public class CompleteGame implements Game {
         System.out.println("Let the game begin mode complet !\n");
 
         showCards();
-        // auto-close
+        showNobles();
+
         while (!gameOver) {
             for (var current : players) {
                 System.out.println(current.toString() + "\n");
                 showMenu(current);
+                updateNoblesForPlayer(current);
                 if (current.getPrestigeScore() >= 15) {
                     gameOver = true;
                 }
                 System.out.println("----------------------------------------\n");
             }
         }
+        showFinalRanking(players);
     }
 
     private boolean buyCard(Player p) {
-        System.out.println("Vous avez atteri ici !");
         if (displayedCards.isEmpty()) {
             System.out.println("Aucune carte n'est actuellement proposée.");
             showMenu(p);
@@ -110,46 +132,55 @@ public class CompleteGame implements Game {
 
         showWallet(p);
         showHeader("CARTES DISPONIBLES À L'ACHAT");
-        showCards();
+        showCards(); // Devrait afficher les cartes numérotées de 1 à 12
 
         while (true) {
-            try{
-                var idx = askInt("Indice de la carte (1-12, 0 pour annuler) : ");
-                int level = idx / 4 +1;
-                int chosenIndex = (idx%4) -1;
+            try {
+                int idx = askInt("Indice de la carte (1-12, 0 pour annuler) : ");
 
-                if (idx < 0) {
+                // Annulation
+                if (idx == 0) {
                     System.out.println("Achat annulé.\n");
                     return false;
                 }
-                if (idx > 12) {
+
+                // Validation de l'indice
+                if (idx < 1 || idx > 12) {
                     System.out.println("Indice invalide, réessayez.");
                     continue;
                 }
+                int level = (idx - 1) / 4 + 1;
+                int position = (idx - 1) % 4;
 
-                var chosen = displayedCards.get(level).get(chosenIndex);
-                System.out.println(p.getWallet() + "\n" + chosen + "\n");
+                List<DevelopmentCard> levelCards = displayedCards.get(level);
+                if (position >= levelCards.size()) {
+                    System.out.println("Cette carte n'est plus disponible, choisissez-en une autre.");
+                    continue;
+                }
+
+                DevelopmentCard chosen = levelCards.get(position);
+
                 if (!p.getWallet().canAfford(chosen.price())) {
                     System.out.println("Pas assez de gemmes pour cette carte, choisissez-en une autre.");
                     continue;
                 }
 
                 p.getWallet().pay(chosen.price());
-
-                System.out.println("Niveau de la carte : " + level);
-                System.out.println("Carte choisie : " + chosenIndex);
-                displayedCards.get(level).remove(chosenIndex);
                 p.addPurchasedCard(chosen);
+                levelCards.remove(position);
                 System.out.println("Carte achetée : " + chosen + "\n");
 
-                if (!displayedCards.get(level).isEmpty()) {
-                    displayedCards.get(level).add(cardDecks.get(level).removeFirst());
+                if (!cardDecks.get(level).isEmpty()) {
+                    DevelopmentCard newCard = cardDecks.get(level).remove(0);
+                    levelCards.add(newCard);
+                    System.out.println("Nouvelle carte ajoutée : " + newCard);
                 }
+
                 return true;
-            }catch (InputMismatchException e){
+
+            } catch (InputMismatchException e) {
                 System.out.println("Erreur : Veuillez entrer un chiffre valide.");
             }
-
         }
     }
 
@@ -159,7 +190,7 @@ public class CompleteGame implements Game {
         System.out.println("1. Acheter une carte disponible");
         System.out.println("2. Réserver une carte");
         System.out.println("3. Prendre deux gemmes de la même couleur");
-        System.out.println("3. Prendre trois gemmes de couleurs différentes");
+        System.out.println("4. Prendre trois gemmes de couleurs différentes");
         while (true) {
             try {
                 var action = askInt("Votre choix : ");

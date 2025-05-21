@@ -25,7 +25,7 @@ public record DevelopmentCard(EnumMap<GemToken, Integer> price, GemToken bonus, 
         }
         priceBuilder.append("]");
 
-        return "[Price: " + price + priceBuilder +
+        return "[Price: " + priceBuilder +
                 ", Bonus: " + bonus +
                 ", Prestige: " + prestigeScore + "]";
     }

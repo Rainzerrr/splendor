@@ -5,7 +5,7 @@ public class Main {
     public static void main(String[] args) {
         Scanner scanner = new Scanner(System.in);
 
-        System.out.println("=== MENU PRINCIPAL ===");
+        System.out.println("[MENU PRINCIPAL]");
         System.out.println("1. Mode Simplifié (2 joueurs exactement)");
         System.out.println("2. Mode Complet (2 à 4 joueurs)");
 
@@ -39,7 +39,7 @@ public class Main {
     }
 
     private static void launchSimplifiedGame(Scanner scanner) {
-        System.out.println("\n=== MODE SIMPLIFIE ===");
+        System.out.println("\n[MODE SIMPLIFIÉ]");
         SimplifiedGame game = new SimplifiedGame(2);
 
         // Ajout des 2 joueurs obligatoires
@@ -58,7 +58,7 @@ public class Main {
     }
 
     private static void launchCompleteGame(Scanner scanner) {
-        System.out.println("\n=== MODE COMPLET ===");
+        System.out.println("\n[MODE COMPLET]");
 
         int playerCount = getValidPlayerCount(scanner);
         CompleteGame game = new CompleteGame(playerCount);

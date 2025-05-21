@@ -25,7 +25,7 @@ public record Noble(String name, EnumMap<GemToken, Integer> price, int prestigeS
         }
         priceBuilder.append("]");
 
-        return  "[Name: " + name + ", Price: " + priceBuilder +
+        return  "[Name: " + name + ", Requirement: " + priceBuilder +
                 ", Prestige: " + prestigeScore + "]";
     }
 }

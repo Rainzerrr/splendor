@@ -123,10 +123,28 @@ public interface Game {
         return true;
     }
 
-    // Affichage
+    default void showFinalRanking(List<Player> players) {
+        System.out.println("Nous avons un vainqueur !");
+        showHeader("Classement final");
+
+        // Tri par score puis nombre de cartes
+        List<Player> sortedPlayers = players.stream()
+                .sorted(Comparator
+                        .comparingInt(Player::getPrestigeScore).reversed()
+                        .thenComparingInt(p -> p.getPurchasedCards().size())
+                )
+                .toList();
+
+        // Affichage avec #
+        for (int i = 0; i < sortedPlayers.size(); i++) {
+            Player p = sortedPlayers.get(i);
+            System.out.println("#" + (i + 1) + " " + p.getName() + " - " + p.getPrestigeScore() + " pts");
+        }
+    }
+
     default void showHeader(String title) {
         Objects.requireNonNull(title);
-        System.out.println("[" + title + "]");
+        System.out.println("[" + title.toUpperCase() + "]");
     }
 
     default void showWallet(Player p) {

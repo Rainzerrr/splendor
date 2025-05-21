@@ -55,13 +55,6 @@ public class SimplifiedGame implements Game {
         System.out.println();
     }
 
-    public void displayRanking() {
-        players.sort(Comparator.comparingInt(Player::getPrestigeScore).reversed());
-        for (int i = 0; i < players.size(); i++) {
-            System.out.println((i + 1) + " - " + players.get(i).toString());
-        }
-    }
-
     private boolean buyCard(Player p) {
         if (displayedCards.isEmpty()) {
             System.out.println("Aucune carte n'est actuellement proposée.");
@@ -158,6 +151,6 @@ public class SimplifiedGame implements Game {
             }
         }
 
-        displayRanking();
+        showFinalRanking(players);
     }
 }

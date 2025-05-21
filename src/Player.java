@@ -1,21 +1,30 @@
 import java.util.*;
+import java.util.stream.IntStream;
+import java.util.stream.Stream;
 
 public class Player {
     private final String name;
     private final GemStack wallet;
     private final ArrayList<DevelopmentCard> reservedCards;
     private final ArrayList<DevelopmentCard> purchasedCards;
+    private final ArrayList<Noble> acquiredNobles;
 
     public Player(String name) {
-        this.wallet = new GemStack(4);
+        this.wallet = new GemStack(40);
         this.purchasedCards = new ArrayList<>();
         this.reservedCards = new ArrayList<>();
         this.name = name;
+        this.acquiredNobles = new ArrayList<>();
+    }
+
+    public String getName() {
+        return name;
     }
 
     public GemStack getWallet() {
         return wallet;
     }
+
 
     public List<DevelopmentCard> getPurchasedCards() {
         return purchasedCards;
@@ -48,11 +57,12 @@ public class Player {
     }
 
     public int getPrestigeScore() {
-        int score = 0;
-        for (DevelopmentCard card : purchasedCards) {
-            score += card.prestigeScore();
-        }
-        return score;
+        return Stream.concat(
+                        purchasedCards.stream().map(DevelopmentCard::prestigeScore),
+                        acquiredNobles.stream().map(Noble::prestigeScore)
+                )
+                .mapToInt(Integer::intValue)
+                .sum();
     }
 
     @Override
