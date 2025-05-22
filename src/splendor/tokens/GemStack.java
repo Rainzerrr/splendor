@@ -80,6 +80,6 @@ public class GemStack {
         if (!canAfford(cost)) {
             throw new IllegalStateException("Pas assez de gemmes pour payer");
         }
-        cost.forEach(this::remove);   // <-- ré-utilise remove(token,amount)
+        cost.forEach(this::remove);
     }
 }

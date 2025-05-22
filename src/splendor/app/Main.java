@@ -2,7 +2,7 @@ package splendor.app;
 
 import splendor.game.CompleteGame;
 import splendor.game.SimplifiedGame;
-import splendor.player.Player;
+import splendor.cards.Player;
 
 import java.util.InputMismatchException;
 import java.util.Scanner;
@@ -30,7 +30,7 @@ public class Main {
             try {
                 System.out.print("Votre choix (1-2) : ");
                 int choice = scanner.nextInt();
-                scanner.nextLine(); // Nettoie le buffer
+                scanner.nextLine();
 
                 if (choice == 1 || choice == 2) {
                     return choice;
@@ -39,7 +39,7 @@ public class Main {
                 }
             } catch (InputMismatchException e) {
                 System.out.println("Erreur : vous devez saisir un nombre");
-                scanner.nextLine(); // Vide le buffer des mauvaises entrées
+                scanner.nextLine();
             }
         }
     }
@@ -48,7 +48,6 @@ public class Main {
         System.out.println("\n[MODE SIMPLIFIÉ]");
         SimplifiedGame game = new SimplifiedGame(2);
 
-        // Ajout des 2 joueurs obligatoires
         for (int i = 1; i <= 2; i++) {
             System.out.print("Nom du Joueur " + i + " : ");
             String name = scanner.nextLine();
@@ -69,7 +68,6 @@ public class Main {
         int playerCount = getValidPlayerCount(scanner);
         CompleteGame game = new CompleteGame(playerCount);
 
-        // Ajout des joueurs
         for (int i = 1; i <= playerCount; i++) {
             System.out.print("Nom du Joueur " + i + " : ");
             String name = scanner.nextLine();
@@ -89,7 +87,7 @@ public class Main {
             try {
                 System.out.print("Nombre de joueurs (2-4) : ");
                 int count = scanner.nextInt();
-                scanner.nextLine(); // Nettoie le buffer
+                scanner.nextLine();
 
                 if (count >= 2 && count <= 4) {
                     return count;
@@ -98,7 +96,7 @@ public class Main {
                 }
             } catch (InputMismatchException e) {
                 System.out.println("Erreur : vous devez saisir un nombre valide");
-                scanner.nextLine(); // Vide le buffer des mauvaises entrées
+                scanner.nextLine();
             }
         }
     }

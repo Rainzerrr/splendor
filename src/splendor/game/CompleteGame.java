@@ -2,7 +2,7 @@ package splendor.game;
 
 import splendor.app.Main;
 import splendor.cards.*;
-import splendor.player.Player;
+import splendor.cards.Player;
 import splendor.tokens.GemStack;
 import splendor.tokens.GemToken;
 import splendor.util.DevelopmentCardLoader;
@@ -53,7 +53,6 @@ public class CompleteGame implements Game {
 
             List<DevelopmentCard> cards = DevelopmentCardLoader.loadCardsFromInputStream(is);
 
-            // 2. Séparez par niveau et méllevel
             cardDecks.put(1, cards.stream().filter(c -> c.level() == 1).collect(Collectors.toList()));
             cardDecks.put(2, cards.stream().filter(c -> c.level() == 2).collect(Collectors.toList()));
             cardDecks.put(3, cards.stream().filter(c -> c.level() == 3).collect(Collectors.toList()));
@@ -70,13 +69,13 @@ public class CompleteGame implements Game {
     @Override
     public void showCards() {
         showHeader("CARTES DISPONIBLES");
-        int compteur = 1; // Initialisation du compteur
+        int compteur = 1;
 
         for (Map.Entry<Integer, List<DevelopmentCard>> entry : displayedCards.entrySet()) {
             System.out.printf("--- Niveau %d ---\n", entry.getKey());
 
             for (DevelopmentCard card : entry.getValue()) {
-                System.out.printf("%2d - %s\n", compteur++, card); // Incrémente le compteur
+                System.out.printf("%2d - %s\n", compteur++, card);
             }
         }
         System.out.println();
@@ -89,7 +88,6 @@ public class CompleteGame implements Game {
     }
 
     private void updateNoblesForPlayer(Player player) {
-        // Calculer les bonus totaux du joueur
         EnumMap<GemToken, Integer> playerBonuses = player.getPurchasedCards().stream()
                 .map(DevelopmentCard::bonus)
                 .collect(Collectors.groupingBy(
@@ -101,11 +99,13 @@ public class CompleteGame implements Game {
         Optional<Noble> acquiredNoble = nobles.stream()
                 .filter(noble -> noble.price().entrySet().stream()
                         .allMatch(entry -> playerBonuses.getOrDefault(entry.getKey(), 0) >= entry.getValue()))
-                .findFirst(); // ← On prend le premier au lieu de toList()
+                .findFirst();
 
         acquiredNoble.ifPresent(noble -> {nobles.remove(noble);
             System.out.println("Vous venez d'acquérir le noble " + noble.name() + "\n");
         });
+
+        player.getAcquiredNobles().add(acquiredNoble.orElse(null));
     }
 
     @Override
@@ -132,6 +132,8 @@ public class CompleteGame implements Game {
         showFinalRanking(players);
     }
 
+
+
     private boolean buyCard(Player p) {
         if (displayedCards.isEmpty()) {
             System.out.println("Aucune carte n'est actuellement proposée.");
@@ -140,16 +142,19 @@ public class CompleteGame implements Game {
         }
 
         showWallet(p);
-        showHeader("CARTES DISPONIBLES À L'ACHAT");
         showCards();
 
         while (true) {
             int indice = askInt("Indice de la carte (1-12, 0 pour annuler) : ", 0, 12);
 
-            // Annulation
             if (indice == 0) {
                 System.out.println("Achat annulé.\n");
                 return false;
+            }
+
+            if (indice < 1 || indice > 12) {
+                System.out.println("Indice invalide, réessayez.");
+                continue;
             }
 
             int level = (indice - 1) / 4 + 1;
@@ -162,13 +167,57 @@ public class CompleteGame implements Game {
             }
 
             DevelopmentCard chosen = levelCards.get(position);
+            Map<GemToken, Integer> price = new EnumMap<>(chosen.price());
 
-            if (!p.getWallet().canAfford(chosen.price())) {
-                System.out.println("Pas assez de gemmes pour cette carte, choisissez-en une autre.");
+            int totalGoldNeeded = 0;
+            Map<GemToken, Integer> missingGems = new EnumMap<>(GemToken.class);
+
+            for (Map.Entry<GemToken, Integer> entry : price.entrySet()) {
+                GemToken gem = entry.getKey();
+                if (gem == GemToken.GOLD) continue;
+
+                int required = entry.getValue();
+                int owned = p.getWallet().getAmount(gem);
+
+                if (owned < required) {
+                    int missing = required - owned;
+                    missingGems.put(gem, missing);
+                    totalGoldNeeded += missing;
+                }
+            }
+
+            int goldAvailable = p.getWallet().getAmount(GemToken.GOLD);
+
+            if (totalGoldNeeded == 0) {
+                p.getWallet().pay(price);
+            }
+            else if (goldAvailable >= totalGoldNeeded) {
+                System.out.printf("Il vous manque %d jeton(s) pour payer cette carte.\n", totalGoldNeeded);
+                System.out.println("Voulez-vous utiliser vos jetons or comme joker pour compenser ? (1. oui / 0. non)");
+                int choice = askInt("Votre choix : ", 0, 1);
+
+                if (choice == 1) {
+                    for (Map.Entry<GemToken, Integer> missEntry : missingGems.entrySet()) {
+                        GemToken gem = missEntry.getKey();
+                        price.put(gem, price.get(gem) - missEntry.getValue());
+                    }
+
+                    p.getWallet().pay(price);
+
+                    p.getWallet().remove(GemToken.GOLD, totalGoldNeeded);
+                    bank.add(GemToken.GOLD, totalGoldNeeded);
+
+                    System.out.printf("%d jeton(s) or utilisés.\n", totalGoldNeeded);
+                } else {
+                    System.out.println("Achat annulé, jetons or non utilisés.");
+                    continue;
+                }
+            }
+            else {
+                System.out.println("Pas assez de jetons, même avec jetons or.");
                 continue;
             }
 
-            p.getWallet().pay(chosen.price());
             p.addPurchasedCard(chosen);
             levelCards.remove(position);
             System.out.println("Carte achetée : " + chosen + "\n");
@@ -186,7 +235,6 @@ public class CompleteGame implements Game {
     private boolean reserveCard(Player p) {
         Objects.requireNonNull(p, "Le joueur ne peut pas être null");
 
-        // Vérification des cartes disponibles
         boolean noCardsAvailable = true;
         for (List<DevelopmentCard> cards : displayedCards.values()) {
             if (!cards.isEmpty()) {
@@ -210,7 +258,6 @@ public class CompleteGame implements Game {
         try {
             showCards();
 
-            // Compter le total de cartes disponibles
             int totalCards = 0;
             for (List<DevelopmentCard> cards : displayedCards.values()) {
                 totalCards += cards.size();
@@ -239,7 +286,6 @@ public class CompleteGame implements Game {
                 }
             }
 
-            // Si la carte n'a pas été trouvée (ne devrait pas arriver)
             System.out.println("Carte non trouvée.");
             return false;
 
@@ -280,7 +326,7 @@ public class CompleteGame implements Game {
             boolean actionSuccess = false;
             switch (action) {
                 case 1 -> actionSuccess = buyCard(player);
-                case 2 -> actionSuccess = reserveCard(player); // reserveCard()
+                case 2 -> actionSuccess = reserveCard(player);
                 case 3 -> actionSuccess = pickTwiceSameGem(player, bank);
                 case 4 -> actionSuccess = pickThreeDifferentGems(player, bank);
                 case 5 -> showNobles();
@@ -290,7 +336,7 @@ public class CompleteGame implements Game {
             }
 
             if (actionSuccess) {
-                return; // Action valide, on quitte le menu
+                return;
             } else {
                 showMenu(player);
                 return;
