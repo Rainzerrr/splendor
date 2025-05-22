@@ -102,10 +102,10 @@ public class SimplifiedGame implements Game {
 
     public void showMenu(Player player) {
         showHeader("ACTIONS DISPONIBLES");
-        System.out.println("Actions : 1. Acheter | 2. Réserver | 3. 2 gemmes identiques | 4. 3 gemmes différentes");
-        System.out.println("Afficher : 5. Nobles | 6. Cartes sur le plateau | 7. Contenu de la banque");
+        System.out.println("Actions : 1. Acheter | 2. 2 gemmes identiques | 3. 3 gemmes différentes");
+        System.out.println("Afficher : 4. Cartes sur le plateau | 5. Contenu de la banque");
         while (true) {
-                var action = askInt("Votre choix : ", 1, 7);
+                var action = askInt("Votre choix : ", 1, 5);
                 System.out.println();
 
                 boolean actionSuccess = false;
@@ -113,8 +113,9 @@ public class SimplifiedGame implements Game {
                     case 1 -> actionSuccess = buyCard(player);
                     case 2 -> actionSuccess = pickTwiceSameGem(player, bank);
                     case 3 -> actionSuccess = pickThreeDifferentGems(player, bank);
-                    case 4 -> {}
-                    default -> System.out.println("Option invalide. Veuillez choisir un nombre entre 1 et 3.\n");
+                    case 4 -> showCards();
+                    case 5 -> showBank(bank);
+                    default -> System.out.println("Option invalide. Veuillez choisir un nombre entre 1 et 5.\n");
                 }
 
                 if (actionSuccess) {
@@ -122,6 +123,7 @@ public class SimplifiedGame implements Game {
                 } else {
                     System.out.println("Retour au menu.");
                     showMenu(player);
+                    return;
             }
         }
     }
