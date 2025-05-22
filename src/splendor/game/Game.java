@@ -2,7 +2,7 @@ package splendor.game;
 
 import splendor.tokens.GemStack;
 import splendor.tokens.GemToken;
-import splendor.player.Player;
+import splendor.cards.Player;
 
 import java.util.*;
 
@@ -82,7 +82,6 @@ public interface Game {
                 int action = askInt("Votre choix (" + (pickedGems.size() + 1) + "/3) : ", 0, 5);
 
                 if (action == 0) {
-                    // Remboursement des gemmes déjà prises
                     for (GemToken token : pickedGems) {
                         player.getWallet().remove(token, 1);
                         bank.add(token, 1);
@@ -114,8 +113,6 @@ public interface Game {
         return true;
     }
 
-    // Méthodes utilitaires
-
     private boolean updateUserWalletForSameGem(Player player, GemToken token, GemStack bank) {
         if (bank.getAmount(token) < 4) {
             System.out.println("Pas assez de gemmes " + token + " dans la banque (il en faut au moins 4).\n");
@@ -146,7 +143,6 @@ public interface Game {
         System.out.println("Nous avons un vainqueur !");
         showHeader("Classement final");
 
-        // Tri par score puis nombre de cartes
         List<Player> sortedPlayers = players.stream()
                 .sorted(Comparator
                         .comparingInt(Player::getPrestigeScore).reversed()
@@ -154,7 +150,6 @@ public interface Game {
                 )
                 .toList();
 
-        // Affichage avec #
         for (int i = 0; i < sortedPlayers.size(); i++) {
             Player p = sortedPlayers.get(i);
             System.out.println("#" + (i + 1) + " " + p.getName() + " - " + p.getPrestigeScore() + " pts");

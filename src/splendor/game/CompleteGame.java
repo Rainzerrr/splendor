@@ -146,14 +146,10 @@ public class CompleteGame implements Game {
         while (true) {
             int indice = askInt("Indice de la carte (1-12, 0 pour annuler) : ", 0, 12);
 
+            // Annulation
             if (indice == 0) {
                 System.out.println("Achat annulé.\n");
                 return false;
-            }
-
-            if (indice < 1 || indice > 12) {
-                System.out.println("Indice invalide, réessayez.");
-                continue;
             }
 
             int level = (indice - 1) / 4 + 1;
@@ -166,65 +162,13 @@ public class CompleteGame implements Game {
             }
 
             DevelopmentCard chosen = levelCards.get(position);
-            Map<GemToken, Integer> price = new EnumMap<>(chosen.price()); // Copie du prix
 
-            // 1. Calculer le total des gemmes manquantes hors or
-            int totalGoldNeeded = 0;
-            Map<GemToken, Integer> missingGems = new EnumMap<>(GemToken.class);
-
-            for (Map.Entry<GemToken, Integer> entry : price.entrySet()) {
-                GemToken gem = entry.getKey();
-                if (gem == GemToken.GOLD) continue;
-
-                int required = entry.getValue();
-                int owned = p.getWallet().getAmount(gem);
-
-                if (owned < required) {
-                    int missing = required - owned;
-                    missingGems.put(gem, missing);
-                    totalGoldNeeded += missing;
-                }
-            }
-
-            int goldAvailable = p.getWallet().getAmount(GemToken.GOLD);
-
-            // 2. Si pas de manque, paiement direct
-            if (totalGoldNeeded == 0) {
-                p.getWallet().pay(price);
-            }
-            // 3. Sinon, s’il a assez d’or, proposer de l’utiliser
-            else if (goldAvailable >= totalGoldNeeded) {
-                System.out.printf("Il vous manque %d jeton(s) pour payer cette carte.\n", totalGoldNeeded);
-                System.out.println("Voulez-vous utiliser vos jetons or comme joker pour compenser ? (1=oui / 0=non)");
-                int choice = askInt("Votre choix : ", 0, 1);
-
-                if (choice == 1) {
-                    // Réduire le prix des gemmes manquantes (car compensées par or)
-                    for (Map.Entry<GemToken, Integer> missEntry : missingGems.entrySet()) {
-                        GemToken gem = missEntry.getKey();
-                        price.put(gem, price.get(gem) - missEntry.getValue());
-                    }
-
-                    // Payer avec prix réduit
-                    p.getWallet().pay(price);
-
-                    // Retirer et remettre les jetons or
-                    p.getWallet().remove(GemToken.GOLD, totalGoldNeeded);
-                    bank.add(GemToken.GOLD, totalGoldNeeded);
-
-                    System.out.printf("%d jeton(s) or utilisés.\n", totalGoldNeeded);
-                } else {
-                    System.out.println("Achat annulé, jetons or non utilisés.");
-                    continue; // retour au menu d’achat
-                }
-            }
-            // 4. Sinon pas assez pour payer même avec or => échec
-            else {
-                System.out.println("Pas assez de jetons, même avec jetons or.");
+            if (!p.getWallet().canAfford(chosen.price())) {
+                System.out.println("Pas assez de gemmes pour cette carte, choisissez-en une autre.");
                 continue;
             }
 
-            // 5. Finalisation achat
+            p.getWallet().pay(chosen.price());
             p.addPurchasedCard(chosen);
             levelCards.remove(position);
             System.out.println("Carte achetée : " + chosen + "\n");

@@ -15,17 +15,15 @@ public class NobleLoader {
         List<Noble> nobles = new ArrayList<>();
         StringBuilder fileContent = new StringBuilder();
 
-        // Lecture du fichier via InputStream
         byte[] buffer = new byte[1024];
         int bytesRead;
         while ((bytesRead = is.read(buffer)) != -1) {
             fileContent.append(new String(buffer, 0, bytesRead));
         }
 
-        // Découpage des lignes
+
         String[] lines = fileContent.toString().split("\n");
 
-        // Traitement (en sautant l'en-tête)
         for (int i = 1; i < lines.length; i++) {
             Noble noble = parseNobleLine(lines[i]);
             if (noble != null) {

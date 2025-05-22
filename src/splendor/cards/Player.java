@@ -1,7 +1,5 @@
-package splendor.player;
+package splendor.cards;
 
-import splendor.cards.DevelopmentCard;
-import splendor.cards.Noble;
 import splendor.tokens.GemStack;
 import splendor.tokens.GemToken;
 
@@ -11,12 +9,12 @@ import java.util.stream.Stream;
 public class Player {
     private final String name;
     private final GemStack wallet;
-    private final ArrayList<DevelopmentCard> reservedCards;
-    private final ArrayList<DevelopmentCard> purchasedCards;
-    private final ArrayList<Noble> acquiredNobles;
+    private final List<DevelopmentCard> reservedCards;
+    private final List<DevelopmentCard> purchasedCards;
+    private final List<Noble> acquiredNobles;
 
     public Player(String name) {
-        this.wallet = new GemStack(40);
+        this.wallet = new GemStack(2);
         this.purchasedCards = new ArrayList<>();
         this.reservedCards = new ArrayList<>();
         this.name = name;
@@ -29,6 +27,10 @@ public class Player {
 
     public GemStack getWallet() {
         return wallet;
+    }
+
+    public List<Noble> getAcquiredNobles() {
+        return acquiredNobles;
     }
 
     public List<DevelopmentCard> getPurchasedCards() {
@@ -72,39 +74,35 @@ public class Player {
                 .sum();
     }
 
+
     @Override
     public String toString() {
         StringBuilder sb = new StringBuilder();
 
-        // [PLAYER X]
         sb.append("[").append("JOUEUR: ")
                 .append(name)
                 .append("] ");
 
-        // Prestige: X
         sb.append("Prestige: ")
                 .append(getPrestigeScore())
                 .append(" | ");
 
-        // Bonus: TYPE(count)...
         sb.append("Bonus: ");
         if (purchasedCards.isEmpty()) {
             sb.append("Aucun");
         } else {
-            // Compter les bonus par type
             Map<GemToken, Integer> bonusCounts = new HashMap<>();
             for (DevelopmentCard card : purchasedCards) {
                 GemToken bonus = card.bonus();
                 bonusCounts.put(bonus, bonusCounts.getOrDefault(bonus, 0) + 1);
             }
 
-            // Formater les bonus
             boolean first = true;
             for (Map.Entry<GemToken, Integer> entry : bonusCounts.entrySet()) {
                 if (!first) {
                     sb.append(" ");
                 }
-                sb.append(entry.getKey().name()) // 3 premières lettres
+                sb.append(entry.getKey().name())
                         .append("(")
                         .append(entry.getValue())
                         .append(")");
@@ -112,9 +110,8 @@ public class Player {
             }
         }
 
-        // Jetons: TYPE(count)...
         sb.append("\nJetons: ")
-                .append(wallet.toString()); // Supposons que GemStack a un toString() au format "TYPE(count)"
+                .append(wallet.toString());
 
         return sb.toString();
     }

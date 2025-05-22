@@ -3,7 +3,7 @@ package splendor.game;
 import splendor.cards.DevelopmentCard;
 import splendor.tokens.GemStack;
 import splendor.tokens.GemToken;
-import splendor.player.Player;
+import splendor.cards.Player;
 
 import java.util.*;
 
@@ -27,15 +27,11 @@ public class SimplifiedGame implements Game {
 
     @Override
     public void initializeCards() {
-        // Pour chaque couleur dans GemToken
         for (GemToken color : GemToken.values()) {
-            // Crée 8 cartes pour cette couleur
             for (int i = 0; i < 8; i++) {
-                // Configure le coût
                 EnumMap<GemToken, Integer> cost = new EnumMap<>(GemToken.class);
                 cost.put(color, 3);
 
-                // Ajoute la nouvelle carte
                 cards.add(new DevelopmentCard(cost, color, 1, 1));
             }
         }
@@ -122,7 +118,7 @@ public class SimplifiedGame implements Game {
                 }
 
                 if (actionSuccess) {
-                    return; // Action valide, on quitte le menu
+                    return;
                 } else {
                     System.out.println("Retour au menu.");
                     showMenu(player);
@@ -135,7 +131,6 @@ public class SimplifiedGame implements Game {
         displayedCards = new ArrayList<>(cards.subList(0, 12));
         System.out.println("Let the game begin !\n");
 
-        // auto-close
         while (!gameOver) {
             for (var current : players) {
                 displayBoard();
