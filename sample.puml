@@ -1,0 +1,184 @@
+@startuml Splendor
+
+' Définition des packages
+package splendor.app {
+    class Main {
+        +main(args: String[]): void
+    }
+}
+
+package splendor.cards {
+    class DevelopmentCard << record >> {
+        price: EnumMap<GemToken, Integer>
+        bonus: GemToken
+        prestigeScore: int
+        level: int
+        +toString(): String
+    }
+    
+    class Noble << record >> {
+        name: String
+        price: EnumMap<GemToken, Integer>
+        prestigeScore: int
+        +toString(): String
+    }
+}
+
+package splendor.game {
+    interface Game {
+        +initializeCards(): void
+    }
+    
+    class SimplifiedGame implements Game {
+        -players: List<Player>
+        -bank: GemStack
+        -cards: List<DevelopmentCard>
+        -gameOver: boolean
+        -displayedCards: ArrayList<DevelopmentCard>
+        +SimplifiedGame(playerNumber: int)
+        +getPlayers(): List<Player>
+        +initializeCards(): void
+        +showCards(): void
+        -displayBoard(): void
+        -buyCard(p: Player): boolean
+        +showMenu(player: Player): void
+        +launch(): void
+    }
+}
+
+package splendor.player {
+    class Player {
+        -name: String
+        -wallet: GemStack
+        -reservedCards: ArrayList<DevelopmentCard>
+        -purchasedCards: ArrayList<DevelopmentCard>
+        -acquiredNobles: ArrayList<Noble>
+        +Player(name: String)
+        +getName(): String
+        +getWallet(): GemStack
+        +getPurchasedCards(): List<DevelopmentCard>
+        +addPurchasedCard(card: DevelopmentCard): void
+        +getReservedCards(): List<DevelopmentCard>
+        +reserveCard(card: DevelopmentCard): void
+        +removeCard(card: DevelopmentCard): void
+        +hasCard(card: DevelopmentCard): boolean
+        +resetGame(): void
+        +getPrestigeScore(): int
+        +canBuy(c: DevelopmentCard): boolean
+        +buy(c: DevelopmentCard): void
+        +toString(): String
+    }
+}
+
+package splendor.resources {
+    class CardResources {
+        -static developmentCards: List<DevelopmentCard>
+        -static nobles: List<Noble>
+        +static initializeCards(): List<DevelopmentCard>
+        +static initializeNobles(): List<Noble>
+        +static loadCardsFromFile(fileName: String): List<DevelopmentCard>
+        +static loadNoblesFromFile(fileName: String): List<Noble>
+    }
+    
+    class ResourceLoader {
+        +static loadResource(path: String): InputStream
+        +static loadTextResource(path: String): String
+    }
+}
+
+package splendor.tokens {
+    enum GemToken {
+        RUBY,
+        EMERALD,
+        DIAMOND,
+        SAPPHIRE,
+        ONYX,
+        GOLD
+    }
+    
+    class GemStack {
+        -tokens: Map<GemToken, Integer>
+        -maxSize: int
+        +GemStack(maxSize: int)
+        +addToken(token: GemToken): boolean
+        +addTokens(tokens: Map<GemToken, Integer>): boolean
+        +removeToken(token: GemToken): boolean
+        +getTokenCount(token: GemToken): int
+        +getTotalTokens(): int
+        +canAfford(price: Map<GemToken, Integer>): boolean
+        +pay(price: Map<GemToken, Integer>): void
+        +resetGame(): void
+        +toString(): String
+    }
+}
+
+package splendor.util {
+    class ConsoleColors {
+        +static RESET: String
+        +static BLACK: String
+        +static RED: String
+        +static GREEN: String
+        +static YELLOW: String
+        +static BLUE: String
+        +static PURPLE: String
+        +static CYAN: String
+        +static WHITE: String
+        +static colorize(text: String, color: String): String
+    }
+    
+    class InputParser {
+        +static parseIntInput(scanner: Scanner, prompt: String): int
+        +static parseIntInput(scanner: Scanner, prompt: String, min: int, max: int): int
+        +static parseStringInput(scanner: Scanner, prompt: String): String
+    }
+    
+    class GameDisplay {
+        +static showHeader(text: String): void
+        +static showBank(bank: GemStack): void
+        +static showWallet(player: Player): void
+        +static showFinalRanking(players: List<Player>): void
+        +static askInt(prompt: String, min: int, max: int): int
+    }
+}
+
+' Relations entre les classes
+' Relations Player
+Player --> GemStack : has
+Player --> "0..*" DevelopmentCard : reserves
+Player --> "0..*" DevelopmentCard : purchases
+Player --> "0..*" Noble : acquires
+
+' Relations SimplifiedGame
+SimplifiedGame --> "0..*" Player : manages
+SimplifiedGame --> GemStack : manages as bank
+SimplifiedGame --> "0..*" DevelopmentCard : manages
+SimplifiedGame ..> GameDisplay : uses
+SimplifiedGame ..> InputParser : uses
+
+' Relations DevelopmentCard
+DevelopmentCard --> GemToken : has bonus
+DevelopmentCard --> "0..*" GemToken : requires (via EnumMap)
+
+' Relations Noble
+Noble --> "0..*" GemToken : requires (via EnumMap)
+
+' Relations Resources
+CardResources ..> DevelopmentCard : creates
+CardResources ..> Noble : creates
+CardResources ..> ResourceLoader : uses
+
+' Relations GemStack
+GemStack --> "0..*" GemToken : contains
+
+' Relations GameDisplay
+GameDisplay ..> ConsoleColors : uses
+GameDisplay ..> Player : displays
+GameDisplay ..> GemStack : displays
+
+' Relations InputParser
+InputParser ..> ConsoleColors : uses
+
+' Relations Main
+Main --> SimplifiedGame : creates and runs
+
+@enduml
