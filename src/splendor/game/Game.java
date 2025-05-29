@@ -2,7 +2,7 @@ package splendor.game;
 
 import splendor.tokens.GemStack;
 import splendor.tokens.GemToken;
-import splendor.cards.Player;
+import splendor.player.Player;
 
 import java.util.*;
 
@@ -13,7 +13,8 @@ public interface Game {
     void showMenu(Player p);
     void showCards();
 
-    default void addPlayer(Player p){
+    default void addPlayer(Player p) {
+        Objects.requireNonNull(p);
         getPlayers().add(p);
     }
 
@@ -83,7 +84,7 @@ public interface Game {
 
                 if (action == 0) {
                     for (GemToken token : pickedGems) {
-                        player.getWallet().remove(token, 1);
+                        player.remove(token, 1);
                         bank.add(token, 1);
                     }
                     System.out.println("Action annulée. Les jetons ont été restitués.\n");
@@ -118,8 +119,9 @@ public interface Game {
             System.out.println("Pas assez de gemmes " + token + " dans la banque (il en faut au moins 4).\n");
             return false;
         }
-        player.getWallet().add(token, 2);
-        bank.remove(token, 2);
+        // Utiliser la méthode add du joueur pour ajouter les gemmes
+        player.add(token, 2);
+        bank.remove(token, 2);  // Retirer les gemmes de la banque
         System.out.println("\nDeux jetons " + token + " ajoutés !\n");
         return true;
     }
@@ -134,8 +136,9 @@ public interface Game {
             return false;
         }
         pickedGems.add(token);
-        player.getWallet().add(token, 1);
-        bank.remove(token, 1);
+        // Utiliser la méthode add du joueur pour ajouter la gemme
+        player.add(token, 1);
+        bank.remove(token, 1);  // Retirer la gemme de la banque
         return true;
     }
 
@@ -146,7 +149,7 @@ public interface Game {
         List<Player> sortedPlayers = players.stream()
                 .sorted(Comparator
                         .comparingInt(Player::getPrestigeScore).reversed()
-                        .thenComparingInt(p -> p.getPurchasedCards().size())
+                        .thenComparingInt(Player::getPurchasedCardsCount) // Utilisation de la méthode getPurchasedCardsCount
                 )
                 .toList();
 
@@ -159,11 +162,6 @@ public interface Game {
     default void showHeader(String title) {
         Objects.requireNonNull(title);
         System.out.println("[" + title.toUpperCase() + "]");
-    }
-
-    default void showWallet(Player p) {
-        Objects.requireNonNull(p);
-        System.out.println("VOS JETONS :\n" + p.getWallet() + "\n");
     }
 
     default void showBank(GemStack bank) {

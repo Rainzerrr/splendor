@@ -3,7 +3,8 @@ package splendor.game;
 import splendor.cards.DevelopmentCard;
 import splendor.tokens.GemStack;
 import splendor.tokens.GemToken;
-import splendor.cards.Player;
+import splendor.player.Player;
+import splendor.game.Game;
 
 import java.util.*;
 
@@ -63,41 +64,41 @@ public class SimplifiedGame implements Game {
             return false;
         }
 
-        showWallet(p);
+        p.showWallet();
         showHeader("CARTES DISPONIBLES À L'ACHAT");
         showCards();
 
         while (true) {
-                var idx = askInt("Indice de la carte (1-%d, 0 pour annuler) : "
-                        .formatted(displayedCards.size()), 0, 12) - 1;
+            int indice = askInt("Indice de la carte (1-" + displayedCards.size() + ", 0 pour annuler) : ", 0, displayedCards.size());
 
-                if (idx < 0) {
-                    System.out.println("Achat annulé.\n");
-                    return false;
-                }
-                if (idx >= displayedCards.size()) {
-                    System.out.println("Indice invalide, réessayez.");
-                    continue;
-                }
+            if (indice == 0) {
+                System.out.println("Achat annulé.\n");
+                return false;
+            }
 
-                var chosen = displayedCards.get(idx);
-                if (!p.getWallet().canAfford(chosen.price())) {
-                    System.out.println("Pas assez de gemmes pour cette carte, choisissez-en une autre.");
-                    continue;
-                }
+            DevelopmentCard chosen = displayedCards.get(indice - 1);
 
-                p.getWallet().pay(chosen.price());
-                displayedCards.remove(idx);
-                p.addPurchasedCard(chosen);
+            // Appeler la méthode dans Player pour acheter la carte
+            boolean success = p.buyCard(chosen, bank);
+
+            if (success) {
+                // Retirer la carte de l'affichage
+                displayedCards.remove(indice - 1);
                 System.out.println("Carte achetée : " + chosen + "\n");
 
+                // Ajouter une nouvelle carte piochée si disponible
                 if (!cards.isEmpty()) {
-                    displayedCards.add(cards.removeFirst());
+                    DevelopmentCard newCard = cards.remove(0);  // Retirer la première carte de la pioche
+                    displayedCards.add(newCard);  // Ajouter au tableau affiché
+                    System.out.println("Nouvelle carte ajoutée : " + newCard);
                 }
+
                 return true;
+            } else {
+                System.out.println("Achat échoué. Veuillez réessayer.\n");
+            }
         }
     }
-
 
 
     public void showMenu(Player player) {

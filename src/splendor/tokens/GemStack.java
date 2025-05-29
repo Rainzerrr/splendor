@@ -76,10 +76,11 @@ public class GemStack {
 
     /** Décrémente la pile selon le coût.  Lève une
      *  {@link IllegalStateException} si la pile est insuffisante. */
-    public void pay(Map<GemToken,Integer> cost) {
+    public boolean pay(Map<GemToken,Integer> cost) {
         if (!canAfford(cost)) {
             throw new IllegalStateException("Pas assez de gemmes pour payer");
         }
         cost.forEach(this::remove);
+        return true;
     }
 }

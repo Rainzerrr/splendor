@@ -88,26 +88,6 @@ public class CompleteGame implements Game {
         System.out.println();
     }
 
-    private void updateNoblesForPlayer(Player player) {
-        // Calculer les bonus totaux du joueur
-        EnumMap<GemToken, Integer> playerBonuses = player.getPurchasedCards().stream()
-                .map(DevelopmentCard::bonus)
-                .collect(Collectors.groupingBy(
-                        Function.identity(),
-                        () -> new EnumMap<>(GemToken.class),
-                        Collectors.summingInt(b -> 1)
-                ));
-
-        Optional<Noble> acquiredNoble = nobles.stream()
-                .filter(noble -> noble.price().entrySet().stream()
-                        .allMatch(entry -> playerBonuses.getOrDefault(entry.getKey(), 0) >= entry.getValue()))
-                .findFirst(); // ← On prend le premier au lieu de toList()
-
-        acquiredNoble.ifPresent(noble -> {nobles.remove(noble);
-            System.out.println("Vous venez d'acquérir le noble " + noble.name() + "\n");
-        });
-    }
-
     @Override
     public void launch() {
         initializeCards();
@@ -121,7 +101,7 @@ public class CompleteGame implements Game {
             for (var current : players) {
                 System.out.println(current.toString() + "\n");
                 showMenu(current);
-                updateNoblesForPlayer(current);
+                current.claimNobleIfEligible(nobles);
                 if (current.getPrestigeScore() >= 15) {
                     gameOver = true;
                 }
@@ -139,14 +119,13 @@ public class CompleteGame implements Game {
             return false;
         }
 
-        showWallet(p);
+        p.showWallet();
         showHeader("CARTES DISPONIBLES À L'ACHAT");
         showCards();
 
         while (true) {
             int indice = askInt("Indice de la carte (1-12, 0 pour annuler) : ", 0, 12);
 
-            // Annulation
             if (indice == 0) {
                 System.out.println("Achat annulé.\n");
                 return false;
@@ -163,37 +142,31 @@ public class CompleteGame implements Game {
 
             DevelopmentCard chosen = levelCards.get(position);
 
-            if (!p.getWallet().canAfford(chosen.price())) {
-                System.out.println("Pas assez de gemmes pour cette carte, choisissez-en une autre.");
-                continue;
+            boolean success = p.buyCard(chosen, bank);
+
+            if (success) {
+                levelCards.remove(position);
+                System.out.println("Carte achetée : " + chosen + "\n");
+
+                if (!cardDecks.get(level).isEmpty()) {
+                    DevelopmentCard newCard = cardDecks.get(level).removeFirst();
+                    levelCards.add(newCard);
+                    System.out.println("Nouvelle carte ajoutée : " + newCard);
+                }
+
+                return true;
+            } else {
+                System.out.println("Achat échoué. Veuillez réessayer.\n");
             }
-
-            p.getWallet().pay(chosen.price());
-            p.addPurchasedCard(chosen);
-            levelCards.remove(position);
-            System.out.println("Carte achetée : " + chosen + "\n");
-
-            if (!cardDecks.get(level).isEmpty()) {
-                DevelopmentCard newCard = cardDecks.get(level).remove(0);
-                levelCards.add(newCard);
-                System.out.println("Nouvelle carte ajoutée : " + newCard);
-            }
-
-            return true;
         }
     }
 
     private boolean reserveCard(Player p) {
         Objects.requireNonNull(p, "Le joueur ne peut pas être null");
 
-        // Vérification des cartes disponibles
-        boolean noCardsAvailable = true;
-        for (List<DevelopmentCard> cards : displayedCards.values()) {
-            if (!cards.isEmpty()) {
-                noCardsAvailable = false;
-                break;
-            }
-        }
+        // Vérifie si au moins une carte est disponible
+        boolean noCardsAvailable = displayedCards.values().stream()
+                .allMatch(List::isEmpty);
 
         if (noCardsAvailable) {
             System.out.println("Aucune carte disponible à la réservation.");
@@ -201,54 +174,45 @@ public class CompleteGame implements Game {
             return false;
         }
 
-        if (p.getReservedCards().size() >= 3) {
-            System.out.println("Limite de réservation atteinte (3 cartes).");
-            showMenu(p);
+        showCards();
+
+        int totalCards = displayedCards.values().stream()
+                .mapToInt(List::size)
+                .sum();
+
+        int choice = askInt("Indice (1-%d, 0 pour annuler) : ".formatted(totalCards), 0, totalCards);
+
+        if (choice == 0) {
+            System.out.println("Réservation annulée.\n");
             return false;
         }
 
-        try {
-            showCards();
+        int currentIndex = 1;
+        for (Map.Entry<Integer, List<DevelopmentCard>> entry : displayedCards.entrySet()) {
+            List<DevelopmentCard> cards = entry.getValue();
+            for (int i = 0; i < cards.size(); i++) {
+                if (currentIndex == choice) {
+                    DevelopmentCard selectedCard = cards.remove(i);
 
-            // Compter le total de cartes disponibles
-            int totalCards = 0;
-            for (List<DevelopmentCard> cards : displayedCards.values()) {
-                totalCards += cards.size();
-            }
+                    // Laisse Player gérer la réservation + jetons or
+                    boolean success = p.reserveCard(selectedCard, bank);
 
-            int choice = askInt("Indice (1-%d, 0 pour annuler) : ".formatted(totalCards), 0, totalCards);
-
-            if (choice == 0) {
-                System.out.println("Réservation annulée.\n");
-                return false;
-            }
-
-            int currentIndex = 1;
-            for (Map.Entry<Integer, List<DevelopmentCard>> entry : displayedCards.entrySet()) {
-                List<DevelopmentCard> cards = entry.getValue();
-                for (int i = 0; i < cards.size(); i++) {
-                    if (currentIndex == choice) {
-                        DevelopmentCard selectedCard = cards.remove(i);
-                        p.reserveCard(selectedCard);
-                        addGoldTokenToPlayer(p);
+                    if (!success) {
+                        System.out.println("Réservation échouée.");
+                        cards.add(i, selectedCard); // remet la carte si échec
+                    } else {
                         updateDisplayedCards();
                         System.out.printf("Réservation réussie : %s\n", selectedCard);
-                        return true;
                     }
-                    currentIndex++;
+                    return success;
                 }
+                currentIndex++;
             }
-
-            // Si la carte n'a pas été trouvée (ne devrait pas arriver)
-            System.out.println("Carte non trouvée.");
-            return false;
-
-        } catch (Exception e) {
-            System.out.println("Erreur de sélection : carte invalide\n");
-            return false;
         }
-    }
 
+        System.out.println("Carte non trouvée.");
+        return false;
+    }
 
     private void updateDisplayedCards() {
         for (int level : Arrays.asList(1, 2, 3)) {
@@ -258,13 +222,6 @@ public class CompleteGame implements Game {
             while (currentDisplay.size() < 4 && !deck.isEmpty()) {
                 currentDisplay.add(deck.removeFirst());
             }
-        }
-    }
-
-    private void addGoldTokenToPlayer(Player p) {
-        if (bank.remove(GemToken.GOLD, 1)) {
-            p.getWallet().add(GemToken.GOLD, 1);
-            System.out.println("Jeton or attribué !");
         }
     }
 
@@ -300,6 +257,6 @@ public class CompleteGame implements Game {
 
     @Override
     public List<Player> getPlayers(){
-        return players;
+        return List.copyOf(players);
     }
 }
