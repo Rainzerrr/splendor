@@ -46,7 +46,7 @@ public class Main {
 
     private static void launchSimplifiedGame(Scanner scanner) {
         System.out.println("\n[MODE SIMPLIFIÉ]");
-        SimplifiedGame game = new SimplifiedGame(2);
+        SimplifiedGame game = new SimplifiedGame();
 
         for (int i = 1; i <= 2; i++) {
             System.out.print("Nom du Joueur " + i + " : ");

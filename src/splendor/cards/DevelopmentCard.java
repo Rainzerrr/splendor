@@ -15,6 +15,12 @@ public record DevelopmentCard(EnumMap<GemToken, Integer> price, GemToken bonus, 
         Objects.requireNonNull(bonus);
     }
 
+    /**
+     * Converts the development card to a string, in the format "[Price: [X(x), Y(y), ...], Bonus: Z, Prestige: W]"
+     * where X(x), Y(y), ... are the gem tokens and their respective costs, Z is the bonus gem token, and W is the prestige score.
+     *
+     * @return A string representation of the development card.
+     */
     @Override
     public String toString() {
         StringBuilder priceBuilder = new StringBuilder("[");

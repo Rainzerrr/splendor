@@ -2,7 +2,7 @@ package splendor.player;
 
 import splendor.cards.DevelopmentCard;
 import splendor.cards.Noble;
-import splendor.tokens.GemStack;
+import splendor.tokens.GemStock;
 import splendor.tokens.GemToken;
 
 import java.util.*;
@@ -12,47 +12,50 @@ import java.util.stream.Stream;
 
 public class Player {
     private final String name;
-    private final GemStack wallet;
+    private final GemStock wallet;
     private final List<DevelopmentCard> reservedCards;
     private final List<DevelopmentCard> purchasedCards;
     private final List<Noble> acquiredNobles;
 
     public Player(String name) {
         Objects.requireNonNull(name);
-        this.wallet = new GemStack(2);
+        this.wallet = new GemStock(2, 0);
         this.purchasedCards = new ArrayList<>();
         this.reservedCards = new ArrayList<>();
         this.name = name;
         this.acquiredNobles = new ArrayList<>();
     }
 
+
+    /**
+     * @return the name of this player
+     */
     public String getName() {
         return name;
     }
 
+    /**
+     * Shows the content of the player's wallet.
+     */
     public void showWallet() {
         System.out.println(wallet);
     }
 
-    public int getPurchasedCardsCount() {
-        return purchasedCards.size();  // retourne directement la taille de la liste des cartes achetées
-    }
-
-    // Added method
     /**
-     * Tente de payer le prix demandé à partir du portefeuille du joueur.
-     * @param price carte des gemmes à payer (GemToken -> quantité)
-     * @return true si le paiement a réussi, false sinon.
+     * Returns the number of purchased cards.
+     *
+     * @return the number of purchased cards, as an int.
      */
-    public void pay(Map<GemToken, Integer> price) {
-        wallet.pay(price);
+    public int getPurchasedCardsCount() {
+        return purchasedCards.size();
     }
 
-    public void addPurchasedCards(DevelopmentCard card) {
-        Objects.requireNonNull(card);
-        purchasedCards.add(card);
-    }
-
+    /**
+     * Returns the total prestige score of the player, based on the prestige scores
+     * of the purchased cards and acquired nobles.
+     *
+     * @return the total prestige score, as an int
+     */
     public int getPrestigeScore() {
         return Stream.concat(
                         purchasedCards.stream().map(DevelopmentCard::prestigeScore),
@@ -62,11 +65,19 @@ public class Player {
                 .sum();
     }
 
-    public boolean reserveCard(DevelopmentCard card, GemStack bank) {
+    /**
+     * Reserve a development card from the given bank.
+     *
+     * @param card the card to be reserved
+     * @param bank the bank from which to reserve the card
+     * @return true if the card was successfully reserved, false if the player
+     * has already reached the maximum number of reserved cards (3)
+     * @throws NullPointerException if either card or bank is null
+     */
+    public boolean reserveCard(DevelopmentCard card, GemStock bank) {
         Objects.requireNonNull(card);
         Objects.requireNonNull(bank);
 
-        // Vérifie limite de réservation
         if (reservedCards.size() >= 3) {
             System.out.println("Limite de réservation atteinte (3 cartes).");
             return false;
@@ -74,7 +85,6 @@ public class Player {
 
         reservedCards.add(card);
 
-        // Donne un jeton or si possible
         if (bank.remove(GemToken.GOLD, 1)) {
             wallet.add(GemToken.GOLD, 1);
             System.out.println("Jeton or attribué !");
@@ -84,6 +94,18 @@ public class Player {
     }
 
 
+    /**
+     * Asks the user for an integer input between {@code min} and {@code max}
+     * (inclusive), and returns the input. If the input is not an integer or is
+     * not within the specified range, it will keep asking until a correct input
+     * is provided.
+     *
+     * @param prompt the prompt to show to the user
+     * @param min    the minimum value (inclusive) of the input
+     * @param max    the maximum value (inclusive) of the input
+     * @return the input provided by the user
+     * @throws NullPointerException if {@code prompt} is null
+     */
     private int askInt(String prompt, int min, int max) {
         Objects.requireNonNull(prompt);
         var scanner = new Scanner(System.in);
@@ -103,19 +125,29 @@ public class Player {
         }
     }
 
-    public boolean buyCard(DevelopmentCard card, GemStack bank) {
+    /**
+     * Attempts to purchase a development card using the player's gem tokens.
+     * This method checks if the player has enough gem tokens to buy the specified
+     * development card. If the player lacks certain gem types, they can opt to use
+     * gold tokens as wildcards to cover the deficit. If the purchase is successful,
+     * the card is added to the player's purchased cards and the corresponding tokens
+     * are transferred from the player's wallet to the bank.
+     *
+     * @param card the development card to be purchased
+     * @param bank the bank from which to transfer tokens
+     * @return true if the card was successfully purchased, false otherwise
+     * @throws NullPointerException if either {@code card} or {@code bank} is null
+     */
+    public boolean buyCard(DevelopmentCard card, GemStock bank) {
         Objects.requireNonNull(card);
         Objects.requireNonNull(bank);
 
         Map<GemToken, Integer> price = new EnumMap<>(card.price());
-
         int totalGoldNeeded = 0;
         Map<GemToken, Integer> missingGems = new EnumMap<>(GemToken.class);
 
         for (Map.Entry<GemToken, Integer> entry : price.entrySet()) {
             GemToken gem = entry.getKey();
-            if (gem == GemToken.GOLD) continue;
-
             int required = entry.getValue();
             int owned = wallet.getAmount(gem);
 
@@ -129,35 +161,42 @@ public class Player {
         int goldAvailable = wallet.getAmount(GemToken.GOLD);
 
         if (totalGoldNeeded == 0) {
-            wallet.pay(price);
+            for (Map.Entry<GemToken, Integer> entry : price.entrySet()) {
+                GemToken gem = entry.getKey();
+                int amount = entry.getValue();
+                wallet.remove(gem, amount);
+                bank.add(gem, amount);
+            }
+            purchasedCards.add(card);
+            return true;
         } else if (goldAvailable >= totalGoldNeeded) {
-            System.out.printf("Il vous manque %d jeton(s) pour payer cette carte.\n", totalGoldNeeded);
-            System.out.println("Voulez-vous utiliser vos jetons or comme joker pour compenser ? (1=oui / 0=non)");
-
-            int choice = askInt("Votre choix (1=oui / 0=non) : ", 0, 1);
+            System.out.printf("Il vous manque %d jeton(s) pour payer cette carte.%n", totalGoldNeeded);
+            int choice = askInt("Voulez-vous utiliser vos jetons or comme joker ? (1=oui / 0=non) : ", 0, 1);
 
             if (choice == 1) {
-                for (Map.Entry<GemToken, Integer> missEntry : missingGems.entrySet()) {
-                    GemToken gem = missEntry.getKey();
-                    price.put(gem, price.get(gem) - missEntry.getValue());
+                for (Map.Entry<GemToken, Integer> entry : price.entrySet()) {
+                    GemToken gem = entry.getKey();
+                    int amountToPay = Math.min(entry.getValue(), wallet.getAmount(gem));
+                    if (amountToPay > 0) {
+                        wallet.remove(gem, amountToPay);
+                        bank.add(gem, amountToPay);
+                    }
                 }
 
-                wallet.pay(price);
                 wallet.remove(GemToken.GOLD, totalGoldNeeded);
                 bank.add(GemToken.GOLD, totalGoldNeeded);
 
-                System.out.printf("%d jeton(s) or utilisés.\n", totalGoldNeeded);
+                System.out.printf("%d jeton(s) or utilisé(s).%n", totalGoldNeeded);
+                purchasedCards.add(card);
+                return true;
             } else {
-                System.out.println("Achat annulé, jetons or non utilisés.");
+                System.out.println("Achat annulé.");
                 return false;
             }
         } else {
-            System.out.println("Pas assez de jetons, même avec jetons or.");
+            System.out.println("Pas assez de jetons, même avec les jetons or.");
             return false;
         }
-
-        purchasedCards.add(card);
-        return true;
     }
 
     /**
@@ -170,12 +209,31 @@ public class Player {
         wallet.remove(gem, amount);
     }
 
+
+    /**
+     * Adds a given number of gems of a given type to the player's wallet.
+     *
+     * @param token  the type of gem to add
+     * @param amount the number of gems to add
+     */
     public void add(GemToken token, int amount) {
+        Objects.requireNonNull(token);
+        if (amount <= 0) {
+            return;
+        }
         wallet.add(token, amount);
         System.out.println(amount + " jeton(s) " + token + " ajouté(s) au portefeuille de " + getName());
     }
 
-    public Optional<Noble> claimNobleIfEligible(List<Noble> nobles) {
+    /**
+     * Tries to claim a noble from the given list if the player is eligible to
+     * claim it. A player is eligible to claim a noble if the player has at
+     * least as many bonus tokens of a given type as the noble's price
+     * specifies.
+     *
+     * @param nobles the list of nobles to try to claim from
+     */
+    public void claimNobleIfEligible(List<Noble> nobles) {
         Objects.requireNonNull(nobles);
 
         EnumMap<GemToken, Integer> bonusMap = purchasedCards.stream()
@@ -186,16 +244,28 @@ public class Player {
                         Collectors.summingInt(b -> 1)
                 ));
 
-        return nobles.stream()
+        Optional<Noble> eligibleNoble = nobles.stream()
                 .filter(noble -> noble.price().entrySet().stream()
-                        .allMatch(entry -> bonusMap.getOrDefault(entry.getKey(), 0) >= entry.getValue()))
+                        .allMatch(entry ->
+                                bonusMap.getOrDefault(entry.getKey(), 0) >= entry.getValue())
+                )
                 .findFirst();
+
+        if (eligibleNoble.isPresent()) {
+            Noble noble = eligibleNoble.get();
+            acquiredNobles.add(noble);
+            nobles.remove(noble);
+        }
+
     }
 
-    public void receiveGold() {
-        wallet.add(GemToken.GOLD, 1);
-    }
-
+    /**
+     * Returns a string representation of the player
+     * The string representation shows the player's name, prestige score,
+     * bonus tokens (if any), and the player's current gems.
+     *
+     * @return a string representation of the player
+     */
     @Override
     public String toString() {
         StringBuilder sb = new StringBuilder();
@@ -220,12 +290,5 @@ public class Player {
 
         sb.append("\nJetons: ").append(wallet);
         return sb.toString();
-    }
-
-    public void resetGame() {
-        wallet.resetGame();
-        purchasedCards.clear();
-        reservedCards.clear();
-        acquiredNobles.clear();
     }
 }
