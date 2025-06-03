@@ -7,5 +7,18 @@
     </content>
     <orderEntry type="inheritedJdk" />
     <orderEntry type="sourceFolder" forTests="false" />
+    <orderEntry type="module-library" exported="">
+      <library>
+        <CLASSES>
+          <root url="jar://$USER_HOME$/Downloads/zen-6.0.jar!/" />
+        </CLASSES>
+        <JAVADOC />
+        <SOURCES />
+      </library>
+    </orderEntry>
+    <orderEntry type="library" name="zen-6.0" level="project" />
+    <orderEntry type="library" name="zen-6.0-sources" level="project" />
+    <orderEntry type="library" name="zen-6.0-javadoc" level="project" />
+    <orderEntry type="library" name="zen-6.0-javadoc (2)" level="project" />
   </component>
 </module>
