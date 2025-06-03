@@ -1,9 +1,4 @@
-package splendor.game;
-
-import splendor.cards.DevelopmentCard;
-import splendor.tokens.GemStock;
-import splendor.tokens.GemToken;
-import splendor.player.Player;
+package splendor.model;
 
 import java.util.*;
 import java.util.stream.IntStream;
@@ -149,11 +144,8 @@ public class SimplifiedGame implements Game {
      * If the chosen action is successful, the method will return. Otherwise, it will show the menu again.
      * @param player the player who is making the choice
      */
-    public void showMenu(Player player) {
+    public void askPlayer(Player player) {
         Objects.requireNonNull(player);
-        showHeader("ACTIONS DISPONIBLES");
-        System.out.println("Actions : 1. Acheter | 2. 2 gemmes identiques | 3. 3 gemmes différentes");
-        System.out.println("Afficher : 4. Cartes sur le plateau | 5. Contenu de la banque");
         while (true) {
                 var action = askInt("Votre choix : ", 1, 5);
                 System.out.println();
@@ -192,7 +184,6 @@ public class SimplifiedGame implements Game {
 
         while (!gameOver) {
             for (var current : players) {
-                displayBoard();
                 System.out.println(current.toString() + "\n");
                 showMenu(current);
                 if (current.getPrestigeScore() >= 15) {

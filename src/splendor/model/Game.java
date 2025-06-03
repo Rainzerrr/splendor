@@ -1,17 +1,18 @@
-package splendor.game;
-
-import splendor.tokens.GemStock;
-import splendor.tokens.GemToken;
-import splendor.player.Player;
+package splendor.model;
 
 import java.util.*;
 
 public interface Game {
     List<Player> getPlayers();
     void initializeCards();
+    void initializeNobles();
     void launch();
     void showMenu(Player p);
     void showCards();
+    int getTokenAmountInBank(GemToken token);
+    void removeTokensInBank(GemToken token, int qte);
+    List<DevelopmentCard> getDisplayedCards();
+    List<DevelopmentCard> getReservedCards();
 
     /**
      * Adds a player to the game.

@@ -1,9 +1,4 @@
-package splendor.player;
-
-import splendor.cards.DevelopmentCard;
-import splendor.cards.Noble;
-import splendor.tokens.GemStock;
-import splendor.tokens.GemToken;
+package splendor.model;
 
 import java.util.*;
 import java.util.function.Function;

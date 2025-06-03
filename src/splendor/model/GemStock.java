@@ -1,4 +1,4 @@
-package splendor.tokens;
+package splendor.model;
 
 import java.util.Arrays;
 import java.util.EnumMap;

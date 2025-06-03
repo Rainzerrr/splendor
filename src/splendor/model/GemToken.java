@@ -1,4 +1,4 @@
-package splendor.tokens;
+package splendor.model;
 
 public enum GemToken {
     RUBY,

@@ -1,13 +1,22 @@
 package splendor.app;
 
-import splendor.game.CompleteGame;
-import splendor.game.SimplifiedGame;
-import splendor.player.Player;
+import splendor.model.CompleteGame;
+import splendor.model.SimplifiedGame;
+import splendor.model.Player;
 
 import java.util.InputMismatchException;
 import java.util.Scanner;
 
 public class Main {
+    /*
+        public static void main(String[] args) {
+            Game game = createGame();
+            GameView gameView = new GameView();
+            GameController controller = new GameController(game, gameView);
+            controller.launchGame();
+        }
+     */
+
     public static void main(String[] args) {
         Scanner scanner = new Scanner(System.in);
 

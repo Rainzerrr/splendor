@@ -1,7 +1,7 @@
 package splendor.util;
 
-import splendor.tokens.GemToken;
-import splendor.cards.Noble;
+import splendor.model.GemToken;
+import splendor.model.Noble;
 
 import java.io.IOException;
 import java.io.InputStream;

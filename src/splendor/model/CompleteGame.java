@@ -1,17 +1,12 @@
-package splendor.game;
+package splendor.model;
 
 import splendor.app.Main;
-import splendor.cards.*;
-import splendor.player.Player;
-import splendor.tokens.GemStock;
-import splendor.tokens.GemToken;
 import splendor.util.DevelopmentCardLoader;
 import splendor.util.NobleLoader;
 
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.*;
-import java.util.function.Function;
 import java.util.stream.Collectors;
 
 public class CompleteGame implements Game {
@@ -137,7 +132,6 @@ public class CompleteGame implements Game {
     public void launch() {
         initializeCards();
         initializeNobles();
-        System.out.println("Let the game begin mode complet !\n");
 
         showCards();
         showNobles();
