@@ -124,6 +124,7 @@ public class GameController {
             case 6 -> { view.showCards(game.getDisplayedCards()); yield false; }
             case 7 -> { view.showBank(game.getBank()); yield false; }
             case 8 -> { playerView.showPurchasedCards(player); yield false; }
+            case 9 -> handleBuyReservedCard(player);
             default -> false;
         };
     }
@@ -188,6 +189,12 @@ public class GameController {
      * @return true if the card was successfully reserved, false otherwise
      */
     private boolean handleReserveCard(Player player) {
+        // Vérifie si le joueur a déjà 3 cartes réservées
+        if (player.getReservedCards().size() >= 3) {
+            view.displayMessage("Vous avez déjà 3 cartes réservées, vous ne pouvez pas en réserver d'autres.");
+            return false;
+        }
+
         List<DevelopmentCard> cards = game.getDisplayedCards();
         view.showCards(cards);
 
@@ -270,4 +277,44 @@ public class GameController {
 
         return true;
     }
+
+    /**
+     * Handles the action of buying a reserved card.
+     * This method shows the player the cards they have reserved, asks the player to choose one,
+     * and then calls the player controller to attempt to buy the card. If the buying is successful,
+     * the card is removed from the player's reserved cards and a success message is shown. Otherwise,
+     * an error message is displayed.
+     *
+     * @param player the current player executing the action
+     * @return true if the card was successfully bought, false if the action was cancelled or if
+     *         the card couldn't be bought
+     */
+    private boolean handleBuyReservedCard(Player player) {
+        List<DevelopmentCard> reserved = player.getReservedCards();
+        if (reserved.isEmpty()) {
+            view.displayMessage("Vous n'avez aucune carte réservée à acheter.");
+            return false;
+        }
+
+        playerView.showReservedCards(player);
+
+        int choice = view.selectCard(reserved.size());
+        if (choice < 0) {
+            view.displayMessage("Achat annulé.");
+            return false;
+        }
+
+        var card = reserved.get(choice);
+        var success = playerController.buyCard(player, card, game.getBank());
+
+        if (success) {
+            player.removeReservedCard(card);
+            view.displayMessage("Carte réservée achetée avec succès !");
+        } else {
+            view.displayMessage("Impossible d'acheter cette carte réservée.");
+        }
+
+        return success;
+    }
+
 }

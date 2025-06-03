@@ -340,4 +340,12 @@ public class Player {
     public List<DevelopmentCard> getPurchasedCards() {
         return Collections.unmodifiableList(purchasedCards);
     }
+
+    public List<DevelopmentCard> getReservedCards() {
+        return Collections.unmodifiableList(reservedCards);
+    }
+
+    public void removeReservedCard(DevelopmentCard card) {
+        reservedCards.remove(card);
+    }
 }

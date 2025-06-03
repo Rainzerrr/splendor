@@ -95,6 +95,13 @@ public class PlayerView {
 
     public void showPurchasedCards(Player player) {
         Objects.requireNonNull(player);
+        System.out.println("Cartes achetées :");
+        player.getPurchasedCards().forEach(System.out::println);
+    }
 
+    public void showReservedCards(Player player) {
+        Objects.requireNonNull(player);
+        System.out.println("Cartes réservées :");
+        player.getReservedCards().forEach(System.out::println);
     }
 }
