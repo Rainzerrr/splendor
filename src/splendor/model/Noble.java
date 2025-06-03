@@ -16,12 +16,9 @@ public record Noble(String name, EnumMap<GemToken, Integer> price, int prestigeS
     @Override
     public String toString() {
         StringBuilder priceBuilder = new StringBuilder("[");
-
         boolean first = true;
         for (Map.Entry<GemToken, Integer> entry : price.entrySet()) {
-            if (!first) {
-                priceBuilder.append(", ");
-            }
+            if (!first) priceBuilder.append(", ");
             priceBuilder.append(entry.getKey()).append("(").append(entry.getValue()).append(")");
             first = false;
         }

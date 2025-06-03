@@ -1,22 +1,26 @@
 package splendor.model;
 
+import splendor.view.ConsoleInput;
 import java.util.*;
 
 public interface Game {
     List<Player> getPlayers();
-    void initializeCards();
-    void initializeNobles();
-    void launch();
-    void showMenu(Player p);
-    void showCards();
-    int getTokenAmountInBank(GemToken token);
-    void removeTokensInBank(GemToken token, int qte);
+    void initializeGame();
+
     List<DevelopmentCard> getDisplayedCards();
     List<DevelopmentCard> getReservedCards();
+    GemStock getBank();
+    boolean buyCard(Player p);
+    abstract List<Noble> getNobles();
+    abstract boolean reserveCard(Player p);
+    void replaceCard(DevelopmentCard card);
+    void removeTokenFromBank(GemToken gem, int amount);
 
     /**
      * Adds a player to the game.
-     * @param p the player to add. Must not be null.
+     *
+     * @param p the player to add; must not be null
+     * @throws NullPointerException if p is null
      */
     default void addPlayer(Player p) {
         Objects.requireNonNull(p);
@@ -24,68 +28,52 @@ public interface Game {
     }
 
     /**
-     * Ask the user for an integer input within a range.
+     * Determines if the game is over.
      *
-     * @param prompt the text to be displayed to the user
-     * @param min the minimum value of the range
-     * @param max the maximum value of the range
-     * @return the integer input by the user
+     * The game is over if at least one player has a prestige score of 15 or more.
+     *
+     * @return true if the game is over, false if the game is not over yet
      */
-    default int askInt(String prompt, int min, int max) {
-        Objects.requireNonNull(prompt);
-        if (min > max) {
-            throw new IllegalArgumentException("Le minimum doit être plus petit que le maximum.");
-        } else if (min < 0 || max < 0) {
-            throw new IllegalArgumentException("Le minimum et le maximum doivent avoir une valeur positive.");
-        }
-
-        var scanner = new Scanner(System.in);
-
-        while (true) {
-            System.out.print(prompt);
-
-            try {
-                int input = scanner.nextInt();
-                if (input < min || input > max) {
-                    System.out.println("Veuillez entrer un nombre entre " + min + " et " + max + ".");
-                } else {
-                    return input;
-                }
-            } catch (InputMismatchException e) {
-                System.out.println("Erreur : veuillez entrer un nombre entier.");
-                scanner.nextLine();
-            }
-        }
+    default boolean isGameOver() {
+        return getPlayers().stream().anyMatch(p -> p.getPrestigeScore() >= 15);
     }
 
     /**
-     * Allows the player to pick two tokens of the same gem from the bank.
+     * Allows a player to pick two gem tokens of the same color from the bank,
+     * provided there are at least four of that gem in the bank.
      *
-     * The player can choose from available gem types: Ruby, Emerald, Diamond, Sapphire, and Onyx.
-     * If the player enters 0, the action is canceled, and any selected gems are returned to the bank.
-     * The action will continue until the player has successfully picked two tokens of the same gem or canceled.
+     * The player is prompted to choose a gem type or cancel the action.
+     * If the player cancels, the action is aborted, and the method returns false.
      *
-     * @param player the player who will pick the gems
-     * @param bank the gem stock from which the player can pick gems
-     * @return true if two tokens of the same gem were successfully added to the player's wallet, false if the action was canceled
+     * If a valid gem type is selected and there are sufficient gems,
+     * the player's wallet is updated, and the method returns true.
+     *
+     * @param player the player attempting to take gem tokens
+     * @param bank the bank from which gem tokens are taken
+     * @param consoleInput the input interface for player actions
+     * @return true if the player successfully picks two gems, false if the action is canceled
+     * @throws NullPointerException if any of the parameters are null
      */
-    default boolean pickTwiceSameGem(Player player, GemStock bank) {
+    default boolean pickTwiceSameGem(Player player, GemStock bank, ConsoleInput consoleInput) {
         Objects.requireNonNull(player);
         Objects.requireNonNull(bank);
+        Objects.requireNonNull(consoleInput);
+
         showBank(bank);
         System.out.println("Vous pouvez récupérer deux gemmes de la même couleur, si > 4 : ");
         System.out.println("1. Ruby, 2. Emerald, 3. Diamond, 4. Sapphire, 5. Onyx");
         System.out.println("0. Annuler et retourner au menu");
+
         while (true) {
             try {
-                var action = askInt("Votre choix : ", 0, 5);
+                int action = consoleInput.askInt("Votre choix : ", 0, 5);
 
                 if (action == 0) {
                     System.out.println("Action annulée.\n");
                     return false;
                 }
 
-                var success = switch (action) {
+                boolean success = switch (action) {
                     case 1 -> updateUserWalletForSameGem(player, GemToken.RUBY, bank);
                     case 2 -> updateUserWalletForSameGem(player, GemToken.EMERALD, bank);
                     case 3 -> updateUserWalletForSameGem(player, GemToken.DIAMOND, bank);
@@ -98,26 +86,18 @@ public interface Game {
                 };
 
                 if (success) return true;
+
             } catch (InputMismatchException e) {
                 System.out.println("Erreur : Veuillez entrer un chiffre valide.");
             }
         }
     }
 
-    /**
-     * Allows the player to pick three different gems from the bank.
-     *
-     * The player can choose from available gem types: Ruby, Emerald, Diamond, Sapphire, and Onyx.
-     * If the player enters 0, the action is canceled, and any selected gems are returned to the bank.
-     * The action will continue until the player has successfully picked three different gems.
-     *
-     * @param player the player who will pick the gems
-     * @param bank the gem stock from which the player can pick gems
-     * @return true if three different gems were successfully added to the player's wallet, false if the action was canceled
-     */
-    default boolean pickThreeDifferentGems(Player player, GemStock bank) {
+    default boolean pickThreeDifferentGems(Player player, GemStock bank, ConsoleInput consoleInput) {
         Objects.requireNonNull(player);
         Objects.requireNonNull(bank);
+        Objects.requireNonNull(consoleInput);
+
         List<GemToken> pickedGems = new ArrayList<>();
         System.out.println("Vous pouvez récupérer trois gemmes différentes dans la banque :");
         System.out.println("1. Ruby, 2. Emerald, 3. Diamond, 4. Sapphire, 5. Onyx");
@@ -125,7 +105,7 @@ public interface Game {
 
         while (pickedGems.size() < 3) {
             try {
-                int action = askInt("Votre choix (" + (pickedGems.size() + 1) + "/3) : ", 0, 5);
+                int action = consoleInput.askInt("Votre choix (" + (pickedGems.size() + 1) + "/3) : ", 0, 5);
 
                 if (action == 0) {
                     for (GemToken token : pickedGems) {
@@ -136,7 +116,7 @@ public interface Game {
                     return false;
                 }
 
-                boolean valid = switch (action) {
+                var valid = switch (action) {
                     case 1 -> updateUserWalletForDifferentGems(player, GemToken.RUBY, pickedGems, bank);
                     case 2 -> updateUserWalletForDifferentGems(player, GemToken.EMERALD, pickedGems, bank);
                     case 3 -> updateUserWalletForDifferentGems(player, GemToken.DIAMOND, pickedGems, bank);
@@ -159,13 +139,6 @@ public interface Game {
         return true;
     }
 
-    /**
-     * Updates the player's wallet with two tokens of the same gem.
-     * @param player the player to update
-     * @param token the gem to add
-     * @param bank the gem stock
-     * @return true if the gem was added successfully, false if there are not enough gems in the bank
-     */
     private boolean updateUserWalletForSameGem(Player player, GemToken token, GemStock bank) {
         Objects.requireNonNull(player);
         Objects.requireNonNull(token);
@@ -174,23 +147,12 @@ public interface Game {
             System.out.println("Pas assez de gemmes " + token + " dans la banque (il en faut au moins 4).\n");
             return false;
         }
-        // Utiliser la méthode add du joueur pour ajouter les gemmes
         player.add(token, 2);
-        bank.remove(token, 2);  // Retirer les gemmes de la banque
+        bank.remove(token, 2);
         System.out.println("\nDeux jetons " + token + " ajoutés !\n");
         return true;
     }
 
-
-    /**
-     * Update the player's wallet with a different gem.
-     *
-     * @param player the player to update
-     * @param token the gem to add
-     * @param pickedGems the list of already picked gems
-     * @param bank the gem stock
-     * @return true if the gem was added successfully, false if it was already picked or not available in the bank
-     */
     private boolean updateUserWalletForDifferentGems(Player player, GemToken token, List<GemToken> pickedGems, GemStock bank) {
         Objects.requireNonNull(player);
         Objects.requireNonNull(token);
@@ -210,23 +172,14 @@ public interface Game {
         return true;
     }
 
-    /**
-     * Displays the final ranking of players based on their prestige scores.
-     *
-     * The players are sorted in descending order of their prestige scores. If two
-     * players have the same prestige score, they are further sorted by the number
-     * of purchased cards they have, in descending order.
-     *
-     * @param players the list of players to rank and display
-     */
     default void showFinalRanking(List<Player> players) {
         System.out.println("Nous avons un vainqueur !");
-        showHeader("Classement final");
+        System.out.println("Classement final");
 
         List<Player> sortedPlayers = players.stream()
                 .sorted(Comparator
                         .comparingInt(Player::getPrestigeScore).reversed()
-                        .thenComparingInt(Player::getPurchasedCardsCount) // Utilisation de la méthode getPurchasedCardsCount
+                        .thenComparingInt(Player::getPurchasedCardsCount).reversed()
                 )
                 .toList();
 
@@ -236,22 +189,11 @@ public interface Game {
         }
     }
 
-    /**
-     * Displays a header with the given title in uppercase, enclosed in square brackets.
-     *
-     * @param title the header title to display; must not be null
-     */
-    default void showHeader(String title) {
-        Objects.requireNonNull(title);
-        System.out.println("[" + title.toUpperCase() + "]");
-    }
-
-    /**
-     * Displays the available tokens in the bank.
-     *
-     * @param bank the gem stock to display; must not be null
-     */
     default void showBank(GemStock bank) {
         System.out.println("JETONS DISPONIBLES :\n" + bank + "\n");
+    }
+
+    default boolean isCompleteGame() {
+        return false;
     }
 }

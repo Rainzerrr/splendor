@@ -4,35 +4,34 @@ import java.util.*;
 import java.util.stream.IntStream;
 
 public class SimplifiedGame implements Game {
-    private final List<Player> players;
-    private final GemStock bank;
-    private final List<DevelopmentCard> cardDecks;
-    private boolean gameOver;
-    private ArrayList<DevelopmentCard> displayedCards;
+    private final List<Player> players = new ArrayList<>();
+    private final GemStock bank = new GemStock(7, 7);
+    private final List<DevelopmentCard> cardDecks = new ArrayList<>();
+    private final List<DevelopmentCard> displayedCards = new ArrayList<>();
 
-    public SimplifiedGame() {
-        players = new ArrayList<>();
-        bank = new GemStock(7, 7) ;
-        cardDecks = new ArrayList<>();
-        gameOver = false;
+    /**
+     * Initializes the game by setting up the deck of cards.
+     * This is only done once, at the start of the game.
+     */
+    @Override
+    public void initializeGame() {
+        initializeCards();
     }
 
     /**
-     * Return the list of players in the game.
+     * Returns an unmodifiable list of all players in the game.
      *
-     * @return an unmodifiable list of players
-     */
-    public List<Player> getPlayers(){
-        return players;
-    };
-
-    /**
-     * Initializes the deck of cards. The deck is composed of 28 cards :
-     * 7 cards of each color (except gold) and a cost of 3 tokens of the same color.
-     * The cards are also given a prestige value of 1.
-     * The deck is then shuffled.
+     * @return The list of players.
      */
     @Override
+    public List<Player> getPlayers() {
+        return Collections.unmodifiableList(players);
+    }
+
+    /**
+     * Initializes the deck of cards by adding 8 cards of each color with cost 3 and victory points 1.
+     * The cards are shuffled and the first 12 are displayed.
+     */
     public void initializeCards() {
         Arrays.stream(GemToken.values())
                 .filter(color -> color != GemToken.GOLD)
@@ -45,154 +44,112 @@ public class SimplifiedGame implements Game {
                 });
 
         Collections.shuffle(cardDecks);
+        displayedCards.addAll(cardDecks.subList(0, 12));
     }
 
     /**
-     * Display the cards that are currently available to buy.
-     *
-     * Each card is displayed with its index (starting from 1) and its string representation.
-     * The cards are separated by a newline and an extra newline is added at the end.
+     * Adds a player to the game.
+     * @param name The name of the player to be added.
      */
-    public void showCards() {
-        for (int i = 0; i < displayedCards.size(); i++) {
-            System.out.println((i + 1) + " - " + displayedCards.get(i));
-        }
-        System.out.println();
+    public void addPlayer(String name) {
+        players.add(new Player(name));
     }
 
     /**
-     * Display the current state of the board.
-     *
-     * The board's state consists of the bank's current gems and the cards that are currently available to buy.
-     * The bank's gems are displayed first, followed by the cards available to buy, each with its index (starting from 1).
-     * A newline is added at the end of the display.
+     * Replaces a card in the displayed cards with a new one from the deck.
+     * If the deck is empty, the card is simply removed from the displayed cards.
+     * @param card The card to be replaced.
      */
-    private void displayBoard() {
-        showBank(bank);
-
-        showHeader("CARTES DISPONIBLES");
-        for (var i = 0; i < displayedCards.size(); i++) {
-            System.out.println((i + 1) + " - " + displayedCards.get(i).toString());
-        }
-        System.out.println();
-    }
-
-    /**
-     * Attempts to buy a card for the specified player.
-     *
-     * This method displays the currently available cards and prompts the player
-     * to select one for purchase. If the player successfully purchases a card,
-     * it is removed from the list of displayed cards and a new card is drawn
-     * from the deck if available. If no cards are available, the method returns
-     * to the menu without making a purchase.
-     *
-     * @param p The player attempting to buy a card.
-     * @return true if the card was successfully purchased, false otherwise.
-     */
-    private boolean buyCard(Player p) {
-        Objects.requireNonNull(p);
-        if (displayedCards.isEmpty()) {
-            System.out.println("Aucune carte n'est actuellement proposée.");
-            showMenu(p);
-            return false;
-        }
-
-        p.showWallet();
-        showHeader("CARTES DISPONIBLES À L'ACHAT");
-        showCards();
-
-        while (true) {
-            int indice = askInt("Indice de la carte (1-" + displayedCards.size() + ", 0 pour annuler) : ", 0, displayedCards.size());
-
-            if (indice == 0) {
-                System.out.println("Achat annulé.\n");
-                return false;
-            }
-
-            DevelopmentCard chosen = displayedCards.get(indice - 1);
-
-            // Appeler la méthode dans Player pour acheter la carte
-            boolean success = p.buyCard(chosen, bank);
-
-            if (success) {
-                displayedCards.remove(indice - 1);
-                System.out.println("Carte achetée : " + chosen + "\n");
-
-                // Ajouter une nouvelle carte piochée si disponible
-                if (!cardDecks.isEmpty()) {
-                    DevelopmentCard newCard = cardDecks.removeFirst();  // Retirer la première carte de la pioche
-                    displayedCards.add(newCard);  // Ajouter au tableau affiché
-                    System.out.println("Nouvelle carte ajoutée dans la pioche : " + newCard);
-                }
-
-                return true;
-            } else {
-                System.out.println("Achat échoué. Veuillez réessayer.\n");
-            }
+    public void replaceCard(DevelopmentCard card) {
+        displayedCards.remove(card);
+        if (!cardDecks.isEmpty()) {
+            displayedCards.add(cardDecks.removeFirst());
         }
     }
 
     /**
-     * Display the menu of actions available to the player, and handle the player's choice.
-     * The player can choose from the following actions:
-     * 1. Buy a card
-     * 2. Pick two identical gems
-     * 3. Pick three different gems
-     * 4. Show cards available to buy
-     * 5. Show bank
-     * The method will continue to prompt the user until a valid choice is made.
-     * If the chosen action is successful, the method will return. Otherwise, it will show the menu again.
-     * @param player the player who is making the choice
+     * Returns an unmodifiable list of currently displayed development cards.
+     * These cards are visible to all players and available for purchase.
+     *
+     * @return An unmodifiable list of displayed development cards.
      */
-    public void askPlayer(Player player) {
-        Objects.requireNonNull(player);
-        while (true) {
-                var action = askInt("Votre choix : ", 1, 5);
-                System.out.println();
-
-                boolean actionSuccess = false;
-                switch (action) {
-                    case 1 -> actionSuccess = buyCard(player);
-                    case 2 -> actionSuccess = pickTwiceSameGem(player, bank);
-                    case 3 -> actionSuccess = pickThreeDifferentGems(player, bank);
-                    case 4 -> showCards();
-                    case 5 -> showBank(bank);
-                    default -> System.out.println("Option invalide. Veuillez choisir un nombre entre 1 et 5.\n");
-                }
-
-                if (actionSuccess) {
-                    return;
-                } else {
-                    System.out.println("Retour au menu.");
-                    showMenu(player);
-                    return;
-            }
-        }
+    @Override
+    public List<DevelopmentCard> getDisplayedCards() {
+        return Collections.unmodifiableList(displayedCards);
     }
 
     /**
-     * Starts the game.
+     * Returns the bank of gems available for purchase.
      *
-     * This method initializes the deck of cards, the bank of gems, and the list of displayed cards.
-     * It then enters a loop where it will repeatedly ask each player to choose an action until a player's prestige score reaches 15.
-     * The game then ends and the final ranking is displayed.
+     * @return The bank of gems.
      */
-    public void launch() {
-        initializeCards();
-        displayedCards = new ArrayList<>(cardDecks.subList(0, 12));
-        System.out.println("Let the game begin !\n");
+    @Override
+    public GemStock getBank() {
+        return bank;
+    }
 
-        while (!gameOver) {
-            for (var current : players) {
-                System.out.println(current.toString() + "\n");
-                showMenu(current);
-                if (current.getPrestigeScore() >= 15) {
-                    gameOver = true;
-                }
-                System.out.println("----------------------------------------\n");
-            }
-        }
+    /**
+     * Attempts to purchase a card from the displayed cards.
+     * In the simplified game, this is not possible, so this method always returns false.
+     *
+     * @param p The player who wishes to purchase the card.
+     * @return Whether the card could be purchased.
+     */
+    @Override
+    public boolean buyCard(Player p) {
+        return false;
+    }
 
-        showFinalRanking(players);
+    /**
+     * Determines whether the game is over.
+     * In the simplified game, the game ends when any player reaches 15 prestige points.
+     *
+     * @return Whether the game is over.
+     */
+    @Override
+    public boolean isGameOver() {
+        return players.stream().anyMatch(p -> p.getPrestigeScore() >= 15);
+    }
+
+    /**
+     * In the simplified game, there is no card reservation.
+     * Therefore, this method always returns an empty list.
+     *
+     * @return An empty list of reserved cards.
+     */
+    @Override
+    public List<DevelopmentCard> getReservedCards() {
+        return Collections.emptyList();
+    }
+
+    /**
+     * Returns an empty list because there are no nobles in the simplified game.
+     * @return An empty list of nobles.
+     */
+    @Override
+    public List<Noble> getNobles() {
+        return Collections.emptyList();
+    }
+
+    /**
+     * Reserves a card from the displayed cards for a player.
+     * In the simplified game, this is not possible, so this method always returns false.
+     *
+     * @param p The player who wishes to reserve the card.
+     * @return Whether the card could be reserved.
+     */
+    @Override
+    public boolean reserveCard(Player p) {
+        return false;
+    }
+
+    /**
+     * Removes a certain amount of a gem token from the bank.
+     * @param gem The gem token to remove.
+     * @param amount The amount of the gem token to remove.
+     */
+    public void removeTokenFromBank(GemToken gem, int amount) {
+        Objects.requireNonNull(gem);
+        bank.remove(gem, amount);
     }
 }

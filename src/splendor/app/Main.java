@@ -1,112 +1,71 @@
 package splendor.app;
 
+import splendor.controller.GameController;
 import splendor.model.CompleteGame;
 import splendor.model.SimplifiedGame;
+import splendor.model.CompleteGame;
+import splendor.model.Game;
 import splendor.model.Player;
+import splendor.view.ConsoleInput;
+import splendor.view.TerminalView;
 
 import java.util.InputMismatchException;
+import java.util.Objects;
 import java.util.Scanner;
+import java.util.stream.IntStream;
 
 public class Main {
-    /*
-        public static void main(String[] args) {
-            Game game = createGame();
-            GameView gameView = new GameView();
-            GameController controller = new GameController(game, gameView);
-            controller.launchGame();
-        }
-     */
-
     public static void main(String[] args) {
-        Scanner scanner = new Scanner(System.in);
+        var input = new ConsoleInput();
+        var view = new TerminalView();
+        view.displayMessage("[MENU PRINCIPAL]");
+        view.displayMessage("1. Mode Simplifié (2 joueurs exactement)");
+        view.displayMessage("2. Mode Complet (2 à 4 joueurs)");
 
-        System.out.println("[MENU PRINCIPAL]");
-        System.out.println("1. Mode Simplifié (2 joueurs exactement)");
-        System.out.println("2. Mode Complet (2 à 4 joueurs)");
+        var choice = input.askInt("Votre choix (1-2) : ", 1, 2);
+        GameController controller;
 
-        int choice = getValidChoice(scanner);
-
-        switch (choice) {
-            case 1 -> launchSimplifiedGame(scanner);
-            case 2 -> launchCompleteGame(scanner);
+        if (choice == 1) {
+            controller = createSimplifiedGame(input);
+        } else {
+            controller = createCompleteGame(input);
         }
 
-        scanner.close();
+        controller.launchGame();
     }
 
-    private static int getValidChoice(Scanner scanner) {
-        while (true) {
-            try {
-                System.out.print("Votre choix (1-2) : ");
-                int choice = scanner.nextInt();
-                scanner.nextLine();
 
-                if (choice == 1 || choice == 2) {
-                    return choice;
-                } else {
-                    System.out.println("Erreur : vous devez saisir 1 ou 2");
-                }
-            } catch (InputMismatchException e) {
-                System.out.println("Erreur : vous devez saisir un nombre");
-                scanner.nextLine();
-            }
-        }
-    }
-
-    private static void launchSimplifiedGame(Scanner scanner) {
-        System.out.println("\n[MODE SIMPLIFIÉ]");
+    /**
+     * Creates a simplified game setup with exactly 2 players.
+     *
+     * @param input An instance of ConsoleInput to gather player names.
+     * @return A GameController initialized with a SimplifiedGame containing 2 players.
+     */
+    private static GameController createSimplifiedGame(ConsoleInput input) {
         SimplifiedGame game = new SimplifiedGame();
-
-        for (int i = 1; i <= 2; i++) {
-            System.out.print("Nom du Joueur " + i + " : ");
-            String name = scanner.nextLine();
-            while (name.isBlank()) {
-                System.out.println("Erreur : le nom ne peut pas être vide");
-                System.out.print("Nom du Joueur " + i + " : ");
-                name = scanner.nextLine();
-            }
-            game.addPlayer(new Player(name));
-        }
-
-        game.launch();
+        IntStream.rangeClosed(1, 2)
+                .forEach(i -> {
+                    var name = input.askString("Nom du joueur n°" + i + " : ");
+                    game.addPlayer(name);
+                });
+        return new GameController(game);
     }
 
-    private static void launchCompleteGame(Scanner scanner) {
-        System.out.println("\n[MODE COMPLET]");
-
-        int playerCount = getValidPlayerCount(scanner);
-        CompleteGame game = new CompleteGame(playerCount);
-
-        for (int i = 1; i <= playerCount; i++) {
-            System.out.print("Nom du Joueur " + i + " : ");
-            String name = scanner.nextLine();
-            while (name.isBlank()) {
-                System.out.println("Erreur : le nom ne peut pas être vide");
-                System.out.print("Nom du Joueur " + i + " : ");
-                name = scanner.nextLine();
-            }
-            game.addPlayer(new Player(name));
-        }
-
-        game.launch();
-    }
-
-    private static int getValidPlayerCount(Scanner scanner) {
-        while (true) {
-            try {
-                System.out.print("Nombre de joueurs (2-4) : ");
-                int count = scanner.nextInt();
-                scanner.nextLine();
-
-                if (count >= 2 && count <= 4) {
-                    return count;
-                } else {
-                    System.out.println("Erreur : vous devez saisir un nombre entre 2 et 4");
-                }
-            } catch (InputMismatchException e) {
-                System.out.println("Erreur : vous devez saisir un nombre valide");
-                scanner.nextLine();
-            }
-        }
+    /**
+     * Creates a complete game setup with 2 to 4 players.
+     *
+     * @param input An instance of ConsoleInput to gather player names.
+     * @return A GameController initialized with a CompleteGame containing 2 to 4 players.
+     */
+    private static GameController createCompleteGame(ConsoleInput input) {
+        Objects.requireNonNull(input);
+        var playerCount = input.askInt("Nombre de joueurs (2-4) : ", 2, 4);
+        var game = new CompleteGame(playerCount);
+        IntStream.rangeClosed(1, playerCount)
+                .forEach(i -> {
+                    var name = input.askString("Nom du Joueur " + i + " : ");
+                    game.addPlayer(name);
+                });
+        return new GameController(game);
     }
 }

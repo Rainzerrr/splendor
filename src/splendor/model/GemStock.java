@@ -56,16 +56,15 @@ public class GemStock {
     /**
      * Removes the specified amount of gems from the current amount of the specified token.
      *
-     * @param token the type of gem token to remove from
+     * @param token  the type of gem token to remove from
      * @param amount the number of gems of the specified type to remove
-     * @return true if the removal succeeded, false if the amount to remove is greater than the amount in the GemStack
-     * @throws NullPointerException if the token is null
+     * @throws NullPointerException     if the token is null
      * @throws IllegalArgumentException if the amount is negative
      */
     public boolean remove(GemToken token, int amount){
         Objects.requireNonNull(token);
         if (amount > getAmount(token)) {
-            throw new IllegalArgumentException("The amount of gems to remove is greater than the amount in the GemStack");
+            return false;
         }
         gems.put(token, gems.getOrDefault(token, 0) - amount);
         return true;
@@ -79,17 +78,13 @@ public class GemStock {
      */
     @Override
     public String toString() {
-        StringBuilder builder = new StringBuilder();
-        int i = 0;
-        for (Map.Entry<GemToken, Integer> entry : gems.entrySet()) {
-            if (i++ > 0) {
-                builder.append(", ");
-            }
+        var builder = new StringBuilder();
+        var i = 0;
+        for (var entry : gems.entrySet()) {
+            if (i++ > 0) builder.append(", ");
             builder.append(entry.getKey().name())
-                    .append("(")
-                    .append(entry.getValue()).append(")");
+                    .append("(").append(entry.getValue()).append(")");
         }
-
         return builder.toString();
     }
 }

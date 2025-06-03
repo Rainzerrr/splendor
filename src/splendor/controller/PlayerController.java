@@ -1,25 +1,63 @@
 package splendor.controller;
-import splendor.model.Game;
-import splendor.model.Player;
-import splendor.view.TerminalView;
+import splendor.model.*;
+import splendor.view.PlayerView;
 
+import java.util.Map;
 import java.util.Objects;
 
 public class PlayerController {
-    private final Player player;
-    private final Game game;
-    private final TerminalView view;
+    private final PlayerView view;
 
-    public PlayerController(Player player, TerminalView view) {
-        Objects.requireNonNull(player);
+    public PlayerController(PlayerView view) {
         Objects.requireNonNull(view);
-        this.player = player;
         this.view = view;
     }
 
-    public void buyCard() {
-        // var card = view.selectCard();
-        // var success = player.buyCard(card, game)
+    public boolean buyCard(Player player, DevelopmentCard card, GemStock bank) {
+        Map<GemToken, Integer> missing = player.calculateMissingGems(card);
+        var totalGoldNeeded = missing.values().stream().mapToInt(Integer::intValue).sum();
 
+        if (totalGoldNeeded == 0) {
+            player.payForCard(card, bank);
+            view.showPurchaseSuccess(card);
+            return true;
+        }
+
+        int goldAvailable = player.getGold();
+        if (goldAvailable < totalGoldNeeded) {
+            view.showNotEnoughGold();
+            return false;
+        }
+
+        view.showMissingGems(missing, totalGoldNeeded);
+        Map<GemToken, Integer> goldReplacements = view.askGoldReplacements(missing, goldAvailable);
+        int totalGoldToUse = goldReplacements.values().stream().mapToInt(Integer::intValue).sum();
+
+        if (totalGoldToUse == 0) {
+            view.showPurchaseCancelled();
+            return false;
+        }
+
+        player.buyCardWithGold(card, bank, goldReplacements, totalGoldToUse);
+        view.showGoldUsed(totalGoldToUse);
+        view.showPurchaseSuccess(card);
+        return true;
+    }
+
+    public boolean reserveCard(Player player, DevelopmentCard card, GemStock bank) {
+        boolean success = player.reserveCard(card, bank);
+        if (success) {
+            view.showReservationSuccess(card);
+        } else {
+            view.showReservationFailed();
+        }
+        return success;
+    }
+
+    public void takeTokens(Player player, Map<GemToken, Integer> tokens, GemStock bank) {
+        for (Map.Entry<GemToken, Integer> entry : tokens.entrySet()) {
+            player.add(entry.getKey(), entry.getValue());
+            bank.remove(entry.getKey(), entry.getValue());
+        }
     }
 }

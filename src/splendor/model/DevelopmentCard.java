@@ -13,21 +13,20 @@ public record DevelopmentCard(EnumMap<GemToken, Integer> price, GemToken bonus, 
         Objects.requireNonNull(bonus);
     }
 
+
     /**
-     * Converts the development card to a string, in the format "[Price: [X(x), Y(y), ...], Bonus: Z, Prestige: W]"
-     * where X(x), Y(y), ... are the gem tokens and their respective costs, Z is the bonus gem token, and W is the prestige score.
+     * Returns a string representation of the DevelopmentCard object.
+     * The format includes the price as a list of GemToken types with their counts,
+     * the bonus GemToken, and the prestige score.
      *
-     * @return A string representation of the development card.
+     * @return a string in the format "[Price: [GemToken(count), ...], Bonus: GemToken, Prestige: int]"
      */
     @Override
     public String toString() {
-        StringBuilder priceBuilder = new StringBuilder("[");
-
-        boolean first = true;
-        for (Map.Entry<GemToken, Integer> entry : price.entrySet()) {
-            if (!first) {
-                priceBuilder.append(", ");
-            }
+        var priceBuilder = new StringBuilder("[");
+        var first = true;
+        for (var entry : price.entrySet()) {
+            if (!first) priceBuilder.append(", ");
             priceBuilder.append(entry.getKey()).append("(").append(entry.getValue()).append(")");
             first = false;
         }
