@@ -120,10 +120,10 @@ public class GameController {
             case 2 -> handlePickTwoSameGems(player);
             case 3 -> handlePickThreeDifferentGems(player);
             case 4 -> handleReserveCard(player);
-            case 5 -> { view.showNobles(game.getNobles()); yield false; }
-            case 6 -> { view.showCards(game.getDisplayedCards()); yield false; }
-            case 7 -> { view.showBank(game.getBank()); yield false; }
-            case 8 -> { playerView.showPurchasedCards(player); yield false; }
+            case 5 -> { view.showBank(game.getBank()); yield false; }
+            case 6 -> { playerView.showPurchasedCards(player); yield false; }
+            case 7 -> { view.showNobles(game.getNobles()); yield false; }
+            case 8 -> { view.showCards(game.getDisplayedCards()); yield false; }
             case 9 -> handleBuyReservedCard(player);
             default -> false;
         };
@@ -189,7 +189,6 @@ public class GameController {
      * @return true if the card was successfully reserved, false otherwise
      */
     private boolean handleReserveCard(Player player) {
-        // Vérifie si le joueur a déjà 3 cartes réservées
         if (player.getReservedCards().size() >= 3) {
             view.displayMessage("Vous avez déjà 3 cartes réservées, vous ne pouvez pas en réserver d'autres.");
             return false;
