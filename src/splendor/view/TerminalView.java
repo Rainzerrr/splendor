@@ -73,15 +73,16 @@ public class TerminalView {
      */
     public void showMenu(boolean isCompleteGame) {
         displayMessage("[ACTIONS DISPONIBLES]");
+
         if (isCompleteGame) {
             displayMessage(
-                    "Actions : 1. Acheter | 2. 2 gemmes identiques | 3. 3 gemmes différentes | \n" +
-                            "4. Réserver | 5. Nobles | 6. Cartes sur le plateau | 7. Contenu de la banque | 8. Cartes achetées | 9. Acheter carte réservée"
+                    "Actions : 1. Acheter | 2. 2 gemmes identiques | 3. 3 gemmes différentes | 4. Réserver | 5. Acheter carte réservée\n" +
+                            "Affichage : 6. Nobles | 7. Cartes sur le plateau | 8. Contenu de la banque | 9. Cartes achetées "
             );
         } else {
             displayMessage(
-                    "Actions : 1. Acheter | 2. 2 gemmes identiques | 3. 3 gemmes différentes | " +
-                            "4. Cartes sur le plateau | 5. Contenu de la banque"
+                    "Actions : 1. Acheter | 2. 2 gemmes identiques | 3. 3 gemmes différentes\n" +
+                            "Affichage : 4. Cartes sur le plateau | 5. Contenu de la banque"
             );
         }
     }

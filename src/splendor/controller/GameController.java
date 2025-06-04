@@ -120,11 +120,11 @@ public class GameController {
             case 2 -> handlePickTwoSameGems(player);
             case 3 -> handlePickThreeDifferentGems(player);
             case 4 -> handleReserveCard(player);
-            case 5 -> { view.showBank(game.getBank()); yield false; }
-            case 6 -> { playerView.showPurchasedCards(player); yield false; }
-            case 7 -> { view.showNobles(game.getNobles()); yield false; }
-            case 8 -> { view.showCards(game.getDisplayedCards()); yield false; }
-            case 9 -> handleBuyReservedCard(player);
+            case 5-> handleBuyReservedCard(player);
+            case 6 -> { view.showNobles(game.getNobles()); yield false; }
+            case 7 -> { view.showCards(game.getDisplayedCards()); yield false; }
+            case 8 -> { view.showBank(game.getBank()); yield false; }
+            case 9 -> { playerView.showPurchasedCards(player); yield false; }
             default -> false;
         };
     }
