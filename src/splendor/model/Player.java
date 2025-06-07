@@ -1,7 +1,5 @@
 package splendor.model;
 
-import splendor.view.ConsoleInput;
-
 import java.util.*;
 import java.util.function.Function;
 import java.util.stream.Collectors;
@@ -13,7 +11,6 @@ public class Player {
     private final List<DevelopmentCard> reservedCards;
     private final List<DevelopmentCard> purchasedCards;
     private final List<Noble> acquiredNobles;
-    private final ConsoleInput consoleInput;
 
     public Player(String name) {
         Objects.requireNonNull(name);
@@ -22,7 +19,6 @@ public class Player {
         this.reservedCards = new ArrayList<>();
         this.name = name;
         this.acquiredNobles = new ArrayList<>();
-        this.consoleInput = new ConsoleInput();
     }
 
     /**
@@ -30,13 +26,6 @@ public class Player {
      */
     public String getName() {
         return name;
-    }
-
-    /**
-     * Shows the content of the player's wallet.
-     */
-    public void showWallet() {
-        System.out.println(wallet);
     }
 
     /**
@@ -119,78 +108,6 @@ public class Player {
         return missingGems;
     }
 
-
-    /**
-     * Buys a development card by transferring the corresponding gem tokens from the player's wallet to the given bank.
-     * If the player lacks some gem tokens, the method will ask if the player wants to use gold tokens as wildcards to cover
-     * the deficit. If the player agrees, the method will transfer the required number of gold tokens from the player's
-     * wallet to the bank and add the card to the player's purchased cards.
-     *
-     * @param card the development card to be purchased
-     * @param bank the bank from which to transfer tokens
-     * @return true if the card was successfully purchased, false if the player cancelled the purchase
-     * @throws NullPointerException if either card or bank is null
-     */
-    public boolean buyCard(DevelopmentCard card, GemStock bank) {
-        Objects.requireNonNull(card);
-        Objects.requireNonNull(bank);
-
-        Map<GemToken, Integer> price = new EnumMap<>(card.price());
-
-        Map<GemToken, Integer> missingGems = price.entrySet().stream()
-                .filter(e -> wallet.getAmount(e.getKey()) < e.getValue())
-                .collect(Collectors.toMap(
-                        Map.Entry::getKey,
-                        e -> e.getValue() - wallet.getAmount(e.getKey()),
-                        (a, b) -> b,
-                        () -> new EnumMap<>(GemToken.class)
-                ));
-
-        int totalGoldNeeded = missingGems.values().stream()
-                .mapToInt(Integer::intValue)
-                .sum();
-
-        int goldAvailable = wallet.getAmount(GemToken.GOLD);
-
-        if (totalGoldNeeded == 0) {
-            price.forEach((gem, amount) -> {
-                wallet.remove(gem, amount);
-                bank.add(gem, amount);
-            });
-            purchasedCards.add(card);
-            return true;
-        }
-
-        if (goldAvailable < totalGoldNeeded) {
-            System.out.println("Pas assez de jetons, même avec les jetons or.");
-            return false;
-        }
-
-        System.out.printf("Il vous manque %d jeton(s) pour payer cette carte.%n", totalGoldNeeded);
-        int choice = consoleInput.askInt("Voulez-vous utiliser vos jetons or comme joker ? (1=oui / 0=non) : ", 0, 1);
-
-        if (choice != 1) {
-            System.out.println("Achat annulé.");
-            return false;
-        }
-
-        price.forEach((gem, required) -> {
-            int owned = wallet.getAmount(gem);
-            int amountToPay = Math.min(required, owned);
-            if (amountToPay > 0) {
-                wallet.remove(gem, amountToPay);
-                bank.add(gem, amountToPay);
-            }
-        });
-
-        wallet.remove(GemToken.GOLD, totalGoldNeeded);
-        bank.add(GemToken.GOLD, totalGoldNeeded);
-
-        System.out.printf("%d jeton(s) or utilisé(s).%n", totalGoldNeeded);
-        purchasedCards.add(card);
-        return true;
-    }
-
     /**
      * Pays for a development card by transferring the corresponding gem tokens
      * from the player's wallet to the bank and adding the card to the player's
@@ -267,7 +184,6 @@ public class Player {
             return;
         }
         wallet.add(token, amount);
-        // System.out.println(amount + " jeton(s) " + token + " ajouté(s) au portefeuille de " + getName());
     }
 
     /**

@@ -3,7 +3,7 @@ package splendor.model;
 import java.util.*;
 import java.util.stream.IntStream;
 
-public class SimplifiedGame implements Game {
+public final class SimplifiedGame implements Game {
     private final List<Player> players = new ArrayList<>();
     private final GemStock bank = new GemStock(7, 7);
     private final List<DevelopmentCard> cardDecks = new ArrayList<>();
@@ -95,31 +95,9 @@ public class SimplifiedGame implements Game {
      * @param p The player who wishes to purchase the card.
      * @return Whether the card could be purchased.
      */
-    @Override
+
     public boolean buyCard(Player p) {
         return false;
-    }
-
-    /**
-     * Determines whether the game is over.
-     * In the simplified game, the game ends when any player reaches 15 prestige points.
-     *
-     * @return Whether the game is over.
-     */
-    @Override
-    public boolean isGameOver() {
-        return players.stream().anyMatch(p -> p.getPrestigeScore() >= 15);
-    }
-
-    /**
-     * In the simplified game, there is no card reservation.
-     * Therefore, this method always returns an empty list.
-     *
-     * @return An empty list of reserved cards.
-     */
-    @Override
-    public List<DevelopmentCard> getReservedCards() {
-        return Collections.emptyList();
     }
 
     /**
@@ -129,18 +107,6 @@ public class SimplifiedGame implements Game {
     @Override
     public List<Noble> getNobles() {
         return Collections.emptyList();
-    }
-
-    /**
-     * Reserves a card from the displayed cards for a player.
-     * In the simplified game, this is not possible, so this method always returns false.
-     *
-     * @param p The player who wishes to reserve the card.
-     * @return Whether the card could be reserved.
-     */
-    @Override
-    public boolean reserveCard(Player p) {
-        return false;
     }
 
     /**

@@ -1,17 +1,10 @@
 package splendor.app;
-
 import splendor.controller.GameController;
 import splendor.model.CompleteGame;
 import splendor.model.SimplifiedGame;
-import splendor.model.CompleteGame;
-import splendor.model.Game;
-import splendor.model.Player;
-import splendor.view.ConsoleInput;
+import splendor.util.ConsoleInput;
 import splendor.view.TerminalView;
-
-import java.util.InputMismatchException;
 import java.util.Objects;
-import java.util.Scanner;
 import java.util.stream.IntStream;
 
 public class Main {

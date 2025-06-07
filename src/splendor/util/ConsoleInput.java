@@ -1,4 +1,4 @@
-package splendor.view;
+package splendor.util;
 
 import splendor.model.GemToken;
 

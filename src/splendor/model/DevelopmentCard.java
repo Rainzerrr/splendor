@@ -1,7 +1,6 @@
 package splendor.model;
 
 import java.util.EnumMap;
-import java.util.Map;
 import java.util.Objects;
 
 public record DevelopmentCard(EnumMap<GemToken, Integer> price, GemToken bonus, int prestigeScore, int level) {
@@ -12,7 +11,6 @@ public record DevelopmentCard(EnumMap<GemToken, Integer> price, GemToken bonus, 
         Objects.requireNonNull(price);
         Objects.requireNonNull(bonus);
     }
-
 
     /**
      * Returns a string representation of the DevelopmentCard object.

@@ -1,14 +1,14 @@
 package splendor.view;
 
 import splendor.model.*;
+import splendor.util.ConsoleInput;
 
 import java.util.List;
 import java.util.Objects;
-import java.util.Scanner;
 
 public class TerminalView {
     private final ConsoleInput input = new ConsoleInput();
-
+// TODO add game as attribute to avoid function parameters
     /**
      * Displays a message to the user.
      *
@@ -69,18 +69,16 @@ public class TerminalView {
     /**
      * Displays the main menu of the game to the user. The menu will indicate which actions are available, and which actions can be used to display the state of the board.
      *
-     * @param isCompleteGame Whether the game is complete or not. If true, the menu will include options to display the state of the board.
+     * @param game The type of game.
      */
-    public void showMenu(boolean isCompleteGame) {
+    public void showMenu(Game game) {
         displayMessage("[ACTIONS DISPONIBLES]");
-
-        if (isCompleteGame) {
-            displayMessage(
+        switch(game) {
+            case CompleteGame c -> displayMessage(
                     "Actions : 1. Acheter | 2. 2 gemmes identiques | 3. 3 gemmes différentes | 4. Réserver | 5. Acheter carte réservée\n" +
                             "Affichage : 6. Nobles | 7. Cartes sur le plateau | 8. Contenu de la banque | 9. Cartes achetées "
             );
-        } else {
-            displayMessage(
+            case SimplifiedGame s -> displayMessage(
                     "Actions : 1. Acheter | 2. 2 gemmes identiques | 3. 3 gemmes différentes\n" +
                             "Affichage : 4. Cartes sur le plateau | 5. Contenu de la banque"
             );
@@ -104,13 +102,15 @@ public class TerminalView {
      * Displays the main menu of the game to the user, and asks for input to
      * select an action to take.
      *
-     * @param isCompleteGame Whether the game is complete or not. If true, the
+     * @param game Whether the game is complete or not. If true, the
      *        menu will include options to display the state of the board.
      * @return the choice of the user, as an integer. The value will be between
      */
-    public int getMenuChoice(boolean isCompleteGame) {
-        var max = isCompleteGame ? 9 : 5;
-        return input.askInt("Votre choix : ", 1, max);
+    public int getMenuChoice(Game game) {
+        return switch (game){
+            case SimplifiedGame s -> input.askInt("Votre choix : ", 1, 5);
+            case CompleteGame s -> input.askInt("Votre choix : ", 1, 9);
+        };
     }
 
     /**

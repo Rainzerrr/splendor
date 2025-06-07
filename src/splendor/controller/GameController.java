@@ -1,7 +1,7 @@
 package splendor.controller;
 
 import splendor.model.*;
-import splendor.view.ConsoleInput;
+import splendor.util.ConsoleInput;
 import splendor.view.PlayerView;
 import splendor.view.TerminalView;
 
@@ -40,7 +40,6 @@ public class GameController {
         view.showFinalRanking(game.getPlayers());
     }
 
-
     /**
      * Handle a player's turn in the game. This involves:
      * - Displaying the current player
@@ -61,13 +60,12 @@ public class GameController {
         var playerView = new PlayerView();
         playerView.showWallet(player);
 
-        var isCompleteGame = game.isCompleteGame();
         boolean actionCompleted;
 
         do {
-            view.showMenu(isCompleteGame);
-            var action = view.getMenuChoice(isCompleteGame);
-            actionCompleted = handleAction(action, player, isCompleteGame);
+            view.showMenu(game);
+            var action = view.getMenuChoice(game);
+            actionCompleted = handleAction(action, player, game);
 
             if (actionCompleted) {
                 playerView.showWallet(player);
@@ -75,10 +73,8 @@ public class GameController {
             }
 
         } while (!actionCompleted);
-
         player.claimNobleIfEligible(game.getNobles());
     }
-
 
     /**
      * Handles the action chosen by the player during their turn.
@@ -87,21 +83,19 @@ public class GameController {
      *
      * @param action the action chosen by the player
      * @param player the current player
-     * @param isCompleteGame a flag indicating if the game is in complete mode
+     * @param game a flag indicating if the game is in complete mode
      * @return true if the action was successfully completed, false otherwise
      */
-    private boolean handleAction(int action, Player player, boolean isCompleteGame) {
+    private boolean handleAction(int action, Player player, Game game) {
         Objects.requireNonNull(player);
         if (action < 0) {
             throw new IllegalArgumentException("Invalid action code: " + action);
         }
-        if (isCompleteGame) {
-            return handleCompleteGameAction(action, player);
-        } else {
-            return handleSimplifiedGameAction(action, player);
-        }
+        return switch (game) {
+            case SimplifiedGame s -> handleSimplifiedGameAction(action, player);
+            case CompleteGame c -> handleCompleteGameAction(action, player);
+        };
     }
-
 
     /**
      * Handles the action chosen by the player during their turn in complete mode.
@@ -230,7 +224,6 @@ public class GameController {
         view.displayMessage("Piochez deux même gemmes");
         GemToken token = consoleInput.selectGemToken();
         if (token == null) return false;
-
         if (game.getBank().getAmount(token) < 4) {
             view.showNotEnoughTokens();
             return false;

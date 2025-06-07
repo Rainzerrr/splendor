@@ -8,6 +8,7 @@ import java.util.Scanner;
 import splendor.model.DevelopmentCard;
 import splendor.model.GemToken;
 import splendor.model.Player;
+import splendor.util.ConsoleInput;
 
 public class PlayerView {
     private final Scanner scanner = new Scanner(System.in);
