@@ -13,6 +13,7 @@ public class GameController {
     private final PlayerController playerController;
     private final ConsoleInput consoleInput;
     private final PlayerView playerView;
+    public static final int MAX_GEMS = 10;
 
     public GameController(Game game) {
         this.game = game;
@@ -40,28 +41,30 @@ public class GameController {
         view.showFinalRanking(game.getPlayers());
     }
 
+
     /**
-     * Handle a player's turn in the game. This involves:
-     * - Displaying the current player
-     * - Displaying the current state of the board
-     * - Displaying the player's wallet
-     * - Repeating the following until the player has completed an action:
-     *   - Asking the user for a choice of action
-     *   - Handling the chosen action
-     *   - If the action is completed, display the player's wallet and the current state of the bank
-     * - Claiming a noble if the player is eligible
-     * - Displaying the player's information
-     * @param player the current player
+     * Handles a player's turn in the game loop.
+     * This method:
+     * - Displays a message indicating the start of the player's turn
+     * - Displays the current state of the game
+     * - Displays the player's wallet
+     * - Repeats the following until the player completes an action:
+     *   - Displays the menu of possible actions
+     *   - Asks the player to choose an action
+     *   - Handles the chosen action
+     *   - Displays the updated state of the game if the action was completed
+     * - Checks if the player is eligible for a noble card and claims it if so
+     * - Enforces the gem limit for the player
+     * - Displays the updated state of the game
      */
     private void handlePlayerTurn(Player player) {
         view.showPlayerTurn(player);
-        view.showBoard(game.getBank(), game.getDisplayedCards(), game.getNobles());
+        view.showBoard(game);
 
         var playerView = new PlayerView();
         playerView.showWallet(player);
 
         boolean actionCompleted;
-
         do {
             view.showMenu(game);
             var action = view.getMenuChoice(game);
@@ -71,9 +74,28 @@ public class GameController {
                 playerView.showWallet(player);
                 view.showBank(game.getBank());
             }
-
         } while (!actionCompleted);
+
         player.claimNobleIfEligible(game.getNobles());
+        enforceGemLimit(player);
+        playerView.showWallet(player);
+        view.showBoard(game);
+    }
+
+    private void enforceGemLimit(Player player) {
+        int total = player.getTotalAmount();
+        if (total <= MAX_GEMS) return;
+
+        int toDiscard = total - MAX_GEMS;
+        view.displayMessage("Vous avez " + total +
+                " gemmes, vous devez en défausser " + toDiscard + ".");
+
+        while (player.getTotalAmount() > MAX_GEMS) {
+            var choice = view.askGemToDiscard(player);
+            player.discardGem(choice);
+            game.getBank().add(choice, 1);
+            playerView.showWallet(player);
+        }
     }
 
     /**
@@ -116,7 +138,7 @@ public class GameController {
             case 4 -> handleReserveCard(player);
             case 5-> handleBuyReservedCard(player);
             case 6 -> { view.showNobles(game.getNobles()); yield false; }
-            case 7 -> { view.showCards(game.getDisplayedCards()); yield false; }
+            case 7 -> { view.showCards(game); yield false; }
             case 8 -> { view.showBank(game.getBank()); yield false; }
             case 9 -> { playerView.showPurchasedCards(player); yield false; }
             default -> false;
@@ -139,7 +161,7 @@ public class GameController {
             case 1 -> handleBuyCard(player);
             case 2 -> handlePickTwoSameGems(player);
             case 3 -> handlePickThreeDifferentGems(player);
-            case 4 -> { view.showCards(game.getDisplayedCards()); yield false; }
+            case 4 -> { view.showCards(game); yield false; }
             case 5 -> { view.showBank(game.getBank()); yield false; }
             default -> false;
         };
@@ -157,7 +179,7 @@ public class GameController {
      */
     private boolean handleBuyCard(Player player) {
         List<DevelopmentCard> cards = game.getDisplayedCards();
-        view.showCards(cards);
+        view.showCards(game);
 
         int choice = view.selectCard(cards.size());
         if (choice < 0) return false;
@@ -189,7 +211,7 @@ public class GameController {
         }
 
         List<DevelopmentCard> cards = game.getDisplayedCards();
-        view.showCards(cards);
+        view.showCards(game);
 
         int choice = view.selectCard(cards.size());
         if (choice < 0) {
@@ -307,6 +329,34 @@ public class GameController {
         }
 
         return success;
+    }
+
+    public boolean processAction(int action, splendor.model.Player player) {
+        return handleAction(action, player, game);
+    }
+
+    /**
+     * Si besoin d'afficher le classement final en console
+     */
+    public splendor.view.TerminalView getView() {
+        return view;
+    }
+
+    /**
+     * Initializes the game.
+     * This method delegates the initialization to the underlying game instance.
+     */
+    public void initializeGame() {
+        game.initializeGame();
+    }
+
+    /**
+     * Returns the underlying game instance.
+     *
+     * @return the game instance
+     */
+    public Game getGame() {
+        return game;
     }
 
 }

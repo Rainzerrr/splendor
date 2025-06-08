@@ -74,17 +74,6 @@ public final class CompleteGame implements Game {
         }
     }
 
-    private void updateDisplayedCards() {
-        for (int level : Arrays.asList(1, 2, 3)) {
-            List<DevelopmentCard> currentDisplay = displayedCards.get(level);
-            LinkedList<DevelopmentCard> deck = cardDecks.get(level);
-
-            while (currentDisplay.size() < 4 && !deck.isEmpty()) {
-                currentDisplay.add(deck.removeFirst());
-            }
-        }
-    }
-
     public GemStock getBank() {
         return bank;
     }
@@ -106,7 +95,7 @@ public final class CompleteGame implements Game {
 
     @Override
     public List<Player> getPlayers() {
-        return Collections.unmodifiableList(players);
+        return players;
     }
 
     @Override

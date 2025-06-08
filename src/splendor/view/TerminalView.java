@@ -3,8 +3,12 @@ package splendor.view;
 import splendor.model.*;
 import splendor.util.ConsoleInput;
 
+import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
+import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 
 public class TerminalView {
     private final ConsoleInput input = new ConsoleInput();
@@ -30,18 +34,41 @@ public class TerminalView {
     }
 
     /**
-     * Displays the list of development cards available to the user.
-     * Each card is shown with an index number starting from 1.
+     * Displays the development cards of the game to the user.
      *
-     * @param cards the list of development cards to display
+     * For a complete game, the cards are grouped by level and displayed in ascending order.
+     * For a simplified game, the cards are displayed in a single list.
+     *
+     * @param game the type of game
      */
-    public void showCards(List<DevelopmentCard> cards) {
-        Objects.requireNonNull(cards);
-        System.out.println("CARTES DISPONIBLES :\n");
-        for (var i = 0; i < cards.size(); i++) {
-            System.out.println((i + 1) + " - " + cards.get(i).toString());
+    public void showCards(Game game) {
+        Objects.requireNonNull(game);
+        var cards = game.getDisplayedCards();
+
+        switch (game) {
+            case CompleteGame c -> {
+                System.out.println("CARTES DISPONIBLES :\n");
+
+                cards.stream()
+                        .collect(Collectors.groupingBy(DevelopmentCard::level))
+                        .entrySet().stream()
+                        .sorted(Map.Entry.comparingByKey())
+                        .forEach(entry -> {
+                            System.out.println("----- NIVEAU " + entry.getKey() + " -----");
+                            entry.getValue().forEach(card ->
+                                    System.out.println("• " + card.toString())
+                            );
+                            System.out.println();
+                        });
+            }
+            case SimplifiedGame s -> {
+                System.out.println("CARTES DISPONIBLES :\n");
+                IntStream.range(0, cards.size())
+                        .forEach(i -> System.out.println((i + 1) + " - " + cards.get(i)));
+                System.out.println();
+            }
+            default -> throw new IllegalStateException("Type de jeu inconnu");
         }
-        System.out.println();
     }
 
     /**
@@ -85,16 +112,19 @@ public class TerminalView {
         }
     }
 
+
+
     /**
-     * Shows the current state of the board to the user, including the current stock of gemstones, the development cards available for purchase, and the nobles present in the game.
+     * Displays the state of the board to the user. This includes the gemstones
+     * available in the bank, the development cards on the board, and the
+     * nobles (if any) that are present in the game.
      *
-     * @param bank the current stock of gemstones
-     * @param cards the development cards available for purchase
-     * @param nobles the nobles present in the game
+     * @param game the game to display the board for
      */
-    public void showBoard(GemStock bank, List<DevelopmentCard> cards, List<Noble> nobles) {
-        showBank(bank);
-        showCards(cards);
+    public void showBoard(Game game) {
+        var nobles = game.getNobles();
+        showBank(game.getBank());
+        showCards(game);
         if (!nobles.isEmpty()) showNobles(nobles);
     }
 
@@ -191,5 +221,24 @@ public class TerminalView {
      */
     public void showRemainingChoices(int remaining) {
         System.out.println("Nombre de gemmes restantes à choisir : " + remaining);
+    }
+
+    public GemToken askGemToDiscard(Player player) {
+        List<GemToken> types = Arrays.stream(GemToken.values())
+                .filter(t -> player.getTokenCount(t) > 0)
+                .toList();
+
+        System.out.println("Choisissez une gemme à défausser :");
+        for (int i = 0; i < types.size(); i++) {
+            GemToken t = types.get(i);
+            System.out.printf("%d) %s (x%d)%n",
+                    i + 1,
+                    t,
+                    player.getTokenCount(t));
+        }
+        var choix = input.askInt("Votre choix (1–" + types.size() + ") : ",
+                1,
+                types.size());
+        return types.get(choix - 1);
     }
 }

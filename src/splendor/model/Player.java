@@ -29,6 +29,33 @@ public class Player {
     }
 
     /**
+     * Returns the number of gem tokens of a given type in the player's wallet.
+     *
+     * @param token the type of gem token to count
+     * @return the number of tokens of the given type, as an int
+     */
+    public int getTokenCount(GemToken token) {
+        return wallet.getAmount(token);
+    }
+
+    /**
+     * Returns the total amount of gems in the stock.
+     *
+     * @return the total amount of gems
+     */
+    public int getTotalAmount() {
+        return Arrays.stream(GemToken.values())
+                .mapToInt(this::getTokenCount)
+                .sum();
+    }
+
+    public void discardGem(GemToken type) {
+        if (wallet.getAmount(type) > 0) {
+            wallet.remove(type, 1);
+        }
+    }
+
+    /**
      * Returns the number of purchased cards.
      *
      * @return the number of purchased cards, as an int.

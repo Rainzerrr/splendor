@@ -1,6 +1,7 @@
 package splendor.model;
 
 import java.util.*;
+import java.util.stream.Collectors;
 
 public sealed interface Game permits SimplifiedGame, CompleteGame {
     List<Player> getPlayers();
@@ -16,7 +17,6 @@ public sealed interface Game permits SimplifiedGame, CompleteGame {
     void replaceCard(DevelopmentCard card);
 
     void removeTokenFromBank(GemToken gem, int amount);
-
     /**
      * Adds a player to the game.
      *
@@ -32,4 +32,8 @@ public sealed interface Game permits SimplifiedGame, CompleteGame {
         return getPlayers().stream().anyMatch(p -> p.getPrestigeScore() >= 15);
     }
 
+    default Map<Integer, List<DevelopmentCard>> groupCardsByLevel(List<DevelopmentCard> cards) {
+        Objects.requireNonNull(cards);
+        return cards.stream().collect(Collectors.groupingBy(DevelopmentCard::level));
+    }
 }
