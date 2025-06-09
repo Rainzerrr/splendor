@@ -29,6 +29,13 @@ public class Player {
     }
 
     /**
+     * @return the wallet of this player
+     */
+    public GemStock getWallet() {
+        return wallet;
+    }
+
+    /**
      * Returns the number of gem tokens of a given type in the player's wallet.
      *
      * @param token the type of gem token to count
@@ -271,7 +278,7 @@ public class Player {
             boolean first = true;
             for (Map.Entry<GemToken, Integer> entry : bonusCounts.entrySet()) {
                 if (!first) sb.append(" ");
-                sb.append(entry.getKey().name()).append("(").append(entry.getValue()).append(")");
+                sb.append(entry.getKey().toString()).append("(").append(entry.getValue()).append(")");
                 first = false;
             }
         }

@@ -39,7 +39,7 @@ public final class SimplifiedGame implements Game {
                     IntStream.range(0, 8).forEach(i -> {
                         EnumMap<GemToken, Integer> cost = new EnumMap<>(GemToken.class);
                         cost.put(color, 3);
-                        cardDecks.add(new DevelopmentCard(cost, color, 1, 1));
+                        cardDecks.add(new DevelopmentCard(cost, color, 1, 1, "../resources/cards/" + color.toString().toLowerCase() + "_mine.png"));
                     });
                 });
 

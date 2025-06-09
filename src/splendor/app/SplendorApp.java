@@ -21,7 +21,7 @@ public class SplendorApp {
         Game game = new CompleteGame(2);
         game.addPlayer(new Player("Mounir"));
         game.addPlayer(new Player("Bob"));
-        GameController controller = new GameController(game);
+        GameController controller = new GameController(game, null);
 
         // 2) Lancement de la boucle Zen
         Application.run(Color.DARK_GRAY, context -> {

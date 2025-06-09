@@ -3,7 +3,7 @@ package splendor.model;
 import java.util.EnumMap;
 import java.util.Objects;
 
-public record DevelopmentCard(EnumMap<GemToken, Integer> price, GemToken bonus, int prestigeScore, int level) {
+public record DevelopmentCard(EnumMap<GemToken, Integer> price, GemToken bonus, int prestigeScore, int level, String imageUrl) {
     public DevelopmentCard{
         if(prestigeScore < 0){
             throw new IllegalArgumentException("The prestige score must be positive");

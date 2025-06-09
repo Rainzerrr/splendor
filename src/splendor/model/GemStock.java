@@ -1,8 +1,6 @@
 package splendor.model;
 
-import java.util.Arrays;
-import java.util.EnumMap;
-import java.util.Objects;
+import java.util.*;
 
 /*
  * GemStack class
@@ -34,6 +32,10 @@ public class GemStock {
     public int getAmount(GemToken token) {
         Objects.requireNonNull(token);
         return gems.getOrDefault(token, 0);
+    }
+
+    public Set<Map.Entry<GemToken, Integer>> entries() {
+        return gems.entrySet();
     }
 
     /**
@@ -91,7 +93,7 @@ public class GemStock {
         var i = 0;
         for (var entry : gems.entrySet()) {
             if (i++ > 0) builder.append(", ");
-            builder.append(entry.getKey().name())
+            builder.append(entry.getKey().toString())
                     .append("(").append(entry.getValue()).append(")");
         }
         return builder.toString();

@@ -2,7 +2,6 @@ package splendor.view;
 
 import splendor.model.*;
 import splendor.util.ConsoleInput;
-
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
@@ -10,7 +9,7 @@ import java.util.Objects;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
-public class TerminalView {
+public final class TerminalView implements SplendorsView {
     private final ConsoleInput input = new ConsoleInput();
 // TODO add game as attribute to avoid function parameters
     /**

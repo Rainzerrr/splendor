@@ -35,7 +35,7 @@ public class DevelopmentCardLoader {
 
     private static DevelopmentCard parseCardLine(String line) {
         String[] tokens = line.split(",");
-        if (tokens.length != 8) return null;
+        if (tokens.length != 9) return null;
 
         try {
             int level = Integer.parseInt(tokens[0].trim());
@@ -49,7 +49,9 @@ public class DevelopmentCardLoader {
             parseTokenCost(price, GemToken.RUBY, tokens[6]);
             parseTokenCost(price, GemToken.ONYX, tokens[7]);
 
-            return new DevelopmentCard(price, bonus, prestige, level);
+            String imageUrl = tokens[8].trim();
+
+            return new DevelopmentCard(price, bonus, prestige, level, imageUrl);
         } catch (Exception e) {
             System.err.println("Erreur parsing ligne: " + line);
             return null;
