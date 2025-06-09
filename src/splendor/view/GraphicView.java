@@ -289,7 +289,6 @@ public final class GraphicView implements SplendorsView{
 
     private void drawCards(Graphics2D g, List<DevelopmentCard> cards) {
         g.setFont(new Font("SansSerif", Font.PLAIN, 24));
-        System.out.println(cards);
         int cardsPerRow = 4;
         int startX = 500;
 
@@ -828,12 +827,12 @@ public final class GraphicView implements SplendorsView{
             int spacing = 20;
             int startX = 20;
             int startY = 100;
-
             String[] options = {
                     "Acheter une carte",
-                    "Réserver une carte",
                     "Récupérer 3 différentes",
-                    "Récupérer 2 identiques"
+                    "Récupérer 2 identiques",
+                    "Réserver une carte",
+                    "Acheter une carte réservée"
             };
 
             g.setFont(new Font("SansSerif", Font.BOLD, 18));
@@ -843,8 +842,7 @@ public final class GraphicView implements SplendorsView{
                 int y = startY + i * (buttonHeight + spacing);
 
                 Rectangle rect = new Rectangle(x, y, buttonWidth, buttonHeight);
-                menuButtons.put(rect, i); // Map rectangle → numéro d'action
-
+                menuButtons.put(rect, i+1);
                 // Fond
                 g.setColor(new Color(80, 80, 80));
                 g.fillRoundRect(x, y, buttonWidth, buttonHeight, 20, 20);
@@ -898,7 +896,6 @@ public final class GraphicView implements SplendorsView{
 
                         for (Map.Entry<Rectangle, Integer> entry : menuButtons.entrySet()) {
                             if (entry.getKey().contains(clickPoint)) {
-                                System.out.println("Choix sélectionné : " + entry.getValue());
                                 return entry.getValue(); // Renvoie l'action liée au bouton cliqué
                             }
                         }
@@ -910,10 +907,26 @@ public final class GraphicView implements SplendorsView{
         }
     }
 
-
     @Override
     public int selectCard(int maxIndex) {
-        return 0;
+        while (true) {
+            Event event = context.pollOrWaitEvent(0); // Attend un événement
+            if (event != null) {
+                switch (event) {
+                    case PointerEvent p when p.action() == PointerEvent.Action.POINTER_DOWN -> {
+                        Point clickPoint = new Point(p.location().x(), p.location().y());
+
+                        for (Map.Entry<Rectangle, Integer> entry : menuButtons.entrySet()) {
+                            if (entry.getKey().contains(clickPoint)) {
+                                return entry.getValue(); // Renvoie l'action liée au bouton cliqué
+                            }
+                        }
+                    }
+                    default -> {
+                    }
+                }
+            }
+        }
     }
 
     @Override

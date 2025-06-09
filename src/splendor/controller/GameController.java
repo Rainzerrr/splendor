@@ -68,6 +68,7 @@
             do {
                 view.showMenu(game);
                 var action = view.getMenuChoice(game);
+                System.out.println("Action sélectionnée : " + action);
                 actionCompleted = handleAction(action, player, game);
 
                 if (actionCompleted) {
@@ -180,7 +181,7 @@
         private boolean handleBuyCard(Player player) {
             List<DevelopmentCard> cards = game.getDisplayedCards();
             view.showCards(game);
-
+            view.displayMessage("Sélectionner un development card.");
             int choice = view.selectCard(cards.size());
             if (choice < 0) return false;
 
