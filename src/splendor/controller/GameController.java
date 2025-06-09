@@ -331,7 +331,7 @@
             return success;
         }
 
-        public boolean processAction(int action, splendor.model.Player player) {
+        public boolean processAction(int action, Player player) {
             return handleAction(action, player, game);
         }
 

@@ -10,6 +10,8 @@ public sealed interface Game permits SimplifiedGame, CompleteGame {
 
     List<DevelopmentCard> getDisplayedCards();
 
+    public List<Integer> getAmountsOfCardByLevel();
+
     GemStock getBank();
 
     List<Noble> getNobles();

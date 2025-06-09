@@ -66,6 +66,11 @@ public final class SimplifiedGame implements Game {
             displayedCards.add(cardDecks.removeFirst());
         }
     }
+    @Override
+    public List<Integer> getAmountsOfCardByLevel(){
+        return List.of(cardDecks.size());
+    };
+
 
     /**
      * Returns an unmodifiable list of currently displayed development cards.

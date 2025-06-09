@@ -4,7 +4,7 @@ import java.util.EnumMap;
 import java.util.Map;
 import java.util.Objects;
 
-public record Noble(String name, EnumMap<GemToken, Integer> price, int prestigeScore) {
+public record Noble(String name, EnumMap<GemToken, Integer> price, int prestigeScore, String imageUrl) {
     public Noble{
         Objects.requireNonNull(name);
         Objects.requireNonNull(price);

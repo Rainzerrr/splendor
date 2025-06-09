@@ -35,6 +35,10 @@ public class Player {
         return wallet;
     }
 
+    public List<Noble> getAcquiredNobles() {
+        return acquiredNobles;
+    }
+
     /**
      * Returns the number of gem tokens of a given type in the player's wallet.
      *

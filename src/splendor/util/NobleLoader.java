@@ -36,7 +36,7 @@ public class NobleLoader {
 
     private static Noble parseNobleLine(String line) {
         String[] tokens = line.split(",");
-        if (tokens.length != 7) return null;
+        if (tokens.length != 8) return null;
 
         try {
             String name = tokens[0].trim();
@@ -49,7 +49,9 @@ public class NobleLoader {
             parseTokenCost(price, GemToken.RUBY, tokens[5]);
             parseTokenCost(price, GemToken.ONYX, tokens[6]);
 
-            return new Noble(name, price, prestige);
+            String imageUrl = tokens[7].trim();
+
+            return new Noble(name, price, prestige, imageUrl);
         } catch (Exception e) {
             System.err.println("Erreur parsing ligne noble: " + line);
             return null;

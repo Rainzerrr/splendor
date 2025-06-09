@@ -78,6 +78,15 @@ public final class CompleteGame implements Game {
         return bank;
     }
 
+
+    @Override
+    public List<Integer> getAmountsOfCardByLevel() {
+        return cardDecks.entrySet().stream()
+                .sorted(Map.Entry.comparingByKey()) // pour garantir l'ordre des niveaux
+                .map(entry -> entry.getValue().size()) // on prend la taille de chaque deck
+                .toList().reversed(); // Java 16+ ; sinon utilise collect(Collectors.toList())
+    }
+
     @Override
     public List<DevelopmentCard> getDisplayedCards() {
         List<DevelopmentCard> allCards = new ArrayList<>();
