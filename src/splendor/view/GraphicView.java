@@ -33,19 +33,45 @@ public final class GraphicView implements SplendorsView{
             GemToken.GOLD, new Color(212, 175, 55)
     ));
 
-    private static final int PLAYERS_STATE_WIDTH = 300;
-    private static final int PLAYERS_STATE_HEIGHT = 250;
-
-
+    private static final int PLAYER_FRAME_WIDTH = 300;
+    private static final int PLAYER_FRAME_HEIGHT = 250;
+    
     private static final int CARD_WIDTH = 130;
-
     private static final int CARD_HEIGHT = 170;
 
     private static final int NOBLE_WIDTH = 130;
-
     private static final int NOBLE_HEIGHT = 130;
 
     private static final int PADDING = 20;
+    private static final Color PANEL_BACKGROUND = new Color(120, 120, 120, 200);
+    private static final Color PANEL_BORDER = new Color(212, 175, 55);
+
+    private static final Color BUBBLE_BACKGROUND = new Color(90, 90, 90);
+    private static final Color BUBBLE_BORDER = PANEL_BORDER;
+    private static final Color BUBBLE_TEXT_COLOR = Color.WHITE;
+
+    private static final int CORNER_RADIUS = 20;
+
+    private static final int BUTTON_WIDTH = 290;
+    private static final int BUTTON_HEIGHT = 50;
+    private static final int BUTTON_SPACING = 20;
+    private static final int BUTTON_RADIUS = 20;
+
+
+    private static final Font HEADER_FONT = new Font("SansSerif", Font.BOLD, 20);
+    private static final Font BANK_TOKEN_COUNT_FONT = new Font("SansSerif", Font.BOLD, 14);
+    private static final Font BUBBLE_FONT = new Font("SansSerif", Font.BOLD, 14);
+
+    private static final Font PLAYER_TOKEN_COUNT_FONT = new Font("SansSerif", Font.BOLD, 16);
+    private static final Font CARD_STACK_AMOUNT_FONT = new Font("SansSerif", Font.BOLD, 16);
+    private static final Font CARD_TOKEN_AMOUNT_FONT = new Font("SansSerif", Font.BOLD, 16);
+    private static final Font NOBLE_TOKEN_AMOUNT_FONT = new Font("SansSerif", Font.BOLD, 16);
+    private static final Font NOBLE_PRESTIGE_FONT = new Font("SansSerif", Font.BOLD, 28);
+    private static final Font CARD_PRESTIGE_FONT = new Font("SansSerif", Font.BOLD, 28);
+    private static final Font PLAYER_NAME_FONT = new Font("SansSerif", Font.BOLD, 24);
+    private static final Font PLAYER_INFOS_TITLE_FONT = new Font("SansSerif", Font.PLAIN, 18);
+    private static final Font PLAYER_INFOS_BONUS_FONT = new Font("SansSerif", Font.BOLD, 16);
+    private static final Font MENU_BUTTON_FONT = new Font("SansSerif", Font.BOLD, 18);
 
     public void run(){
         Application.run(Color.BLUE.darker(), context -> {
@@ -71,13 +97,13 @@ public final class GraphicView implements SplendorsView{
     private void drawHeader(Graphics2D g, String message, int screenWidth) {
         // Rectangle
         g.setColor(Color.WHITE);
-        g.fillRect(0, 10, screenWidth - PLAYERS_STATE_WIDTH, 50);
+        g.fillRect(0, 10, screenWidth - PLAYER_FRAME_WIDTH, 50);
 
         // Texte (centrage précis)
-        g.setFont(new Font("SansSerif", Font.BOLD, 20));
+        g.setFont(HEADER_FONT);
         FontMetrics fm = g.getFontMetrics();
-        int textX = ((screenWidth - PLAYERS_STATE_WIDTH) - fm.stringWidth(message)) / 2;
-        int textY = (50 - fm.getHeight()) / 2 + fm.getAscent() + 10; // Centrage vertical mathématique
+        int textX = ((screenWidth - PLAYER_FRAME_WIDTH) - fm.stringWidth(message)) / 2;
+        int textY = (50 - fm.getHeight()) / 2 + fm.getAscent() + 10;
         g.setColor(Color.BLACK);
         g.drawString(message, textX, textY);
     }
@@ -85,7 +111,6 @@ public final class GraphicView implements SplendorsView{
     // Méthode appelée à chaque frame
     private void draw(Graphics2D g) {
         int width = context.getScreenInfo().width();
-        int height = context.getScreenInfo().height();
 
         try {
             drawBackground(g);
@@ -94,6 +119,31 @@ public final class GraphicView implements SplendorsView{
         } catch (IOException e) {
             e.printStackTrace();
         }
+    }
+
+    private void drawTokenImageAmount(Graphics2D g, int x, int y, String imagePath, int count) {
+        int circleRadius = 14;
+        int PADDING = 4;
+        int circleX = x - PADDING;
+        int circleY = y + PADDING - 8;
+
+        // Cercle blanc + contour
+        g.setColor(Color.WHITE);
+        g.fillOval(circleX, circleY, circleRadius * 2, circleRadius * 2);
+        g.setColor(Color.BLACK);
+        g.drawOval(circleX, circleY, circleRadius * 2, circleRadius * 2);
+
+        // Texte centré
+        g.setFont(BANK_TOKEN_COUNT_FONT);
+        String text = String.valueOf(count);
+        FontMetrics fm = g.getFontMetrics();
+        int textWidth = fm.stringWidth(text);
+        int textHeight = fm.getAscent();
+        int textX = circleX + (circleRadius * 2 - textWidth) / 2;
+        int textY = circleY + (circleRadius * 2 + textHeight) / 2 - 2;
+
+        g.setColor(Color.BLACK);
+        g.drawString(text, textX, textY);
     }
 
     private void drawTokenImage(Graphics2D g, int x, int y, String imagePath, int count) {
@@ -107,148 +157,96 @@ public final class GraphicView implements SplendorsView{
             int size = 70; // taille du token
             g.drawImage(tokenImage, x, y, size, size, null);
 
-            // Compteur (en haut à droite du token, légèrement plus haut)
-            int circleRadius = 14;
-            int PADDING = 4; // marge intérieure
-            int circleX = x - PADDING;
-            int circleY = y + PADDING - 8; // ↰ on le remonte de 4 pixels
-
-            // Cercle blanc
-            g.setColor(Color.WHITE);
-            g.fillOval(circleX, circleY, circleRadius * 2, circleRadius * 2);
-
-            // Contour noir
-            g.setColor(Color.BLACK);
-            g.drawOval(circleX, circleY, circleRadius * 2, circleRadius * 2);
-
-            // Texte centré dans le petit cercle
-            g.setFont(new Font("SansSerif", Font.BOLD, 14));
-            String text = String.valueOf(count);
-            FontMetrics fm = g.getFontMetrics();
-            int textWidth = fm.stringWidth(text);
-            int textHeight = fm.getAscent();
-            int textX = circleX + (circleRadius * 2 - textWidth) / 2;
-            int textY = circleY + (circleRadius * 2 + textHeight) / 2 - 2;
-
-            g.setColor(Color.BLACK);
-            g.drawString(text, textX, textY);
-
+            drawTokenImageAmount(g, x, y, imagePath, count);
         } catch (IOException e) {
             e.printStackTrace();
         }
     }
 
-    private void drawGemStones(Graphics2D g, Player p, int width) {
-        // Dimensions
-        int rectHeight = 90;
-        int x = 500;
-        int y = 720;
-        int cornerRadius = 20;
-        int PADDING = 15;
+    private void drawFramedPanel(Graphics2D g, int x, int y, int width, int height) {
+        g.setColor(PANEL_BACKGROUND);
+        g.fillRoundRect(x, y, width, height, CORNER_RADIUS, CORNER_RADIUS);
 
-        // Rectangle principal
-        g.setColor(new Color(120, 120, 120, 200));
-        g.fillRoundRect(x, y, width, rectHeight, cornerRadius, cornerRadius);
-
-        // Bordure principale
-        g.setColor(new Color(212, 175, 55));
+        g.setColor(PANEL_BORDER);
         g.setStroke(new BasicStroke(2));
-        g.drawRoundRect(x, y, width, rectHeight, cornerRadius, cornerRadius);
+        g.drawRoundRect(x, y, width, height, CORNER_RADIUS, CORNER_RADIUS);
+    }
 
-        // Bulle du titre (centrée en haut)
-        String title = "Pierres précieuses";
-        int titleBubbleWidth = 180;
-        int titleBubbleHeight = 30;
-        int titleBubbleX = x + (width - titleBubbleWidth) / 2;
-        int titleBubbleY = y - 15;
+    private void drawBubble(Graphics2D g, String text, int x, int y, int width, int height) {
+        g.setColor(BUBBLE_BACKGROUND);
+        g.fillRoundRect(x, y, width, height, 15, 15);
 
-        // Fond bulle titre
-        g.setColor(new Color(90, 90, 90));
-        g.fillRoundRect(titleBubbleX, titleBubbleY, titleBubbleWidth, titleBubbleHeight, 15, 15);
+        g.setColor(BUBBLE_BORDER);
+        g.drawRoundRect(x, y, width, height, 15, 15);
 
-        // Bordure bulle titre
-        g.setColor(new Color(212, 175, 55));
-        g.drawRoundRect(titleBubbleX, titleBubbleY, titleBubbleWidth, titleBubbleHeight, 15, 15);
+        g.setColor(BUBBLE_TEXT_COLOR);
+        g.setFont(BUBBLE_FONT);
+        int textWidth = g.getFontMetrics().stringWidth(text);
+        g.drawString(text, x + (width - textWidth) / 2, y + (height + BUBBLE_FONT.getSize()) / 2 - 2);
+    }
 
-        // Texte titre
-        g.setColor(Color.WHITE);
-        g.setFont(new Font("SansSerif", Font.BOLD, 14));
-        int titleWidth = g.getFontMetrics().stringWidth(title);
-        g.drawString(title, titleBubbleX + (titleBubbleWidth - titleWidth)/2, titleBubbleY + 20);
-
-        // Compteur total (à droite)
-        int totalGems = p.getTotalAmount();
-        String counterText = totalGems + "/10";
-        int counterBubbleWidth = 50;
-        int counterBubbleX = x + width - counterBubbleWidth - PADDING;
-        int counterBubbleY = y - 15;
-
-        // Fond bulle compteur
-        g.setColor(new Color(90, 90, 90));
-        g.fillRoundRect(counterBubbleX, counterBubbleY, counterBubbleWidth, titleBubbleHeight, 15, 15);
-
-        // Bordure bulle compteur
-        g.setColor(new Color(212, 175, 55));
-        g.drawRoundRect(counterBubbleX, counterBubbleY, counterBubbleWidth, titleBubbleHeight, 15, 15);
-
-        // Texte compteur
-        g.setColor(Color.WHITE);
-        int counterWidth = g.getFontMetrics().stringWidth(counterText);
-        g.drawString(counterText, counterBubbleX + (counterBubbleWidth - counterWidth)/2, counterBubbleY + 20);
-
-        // Configuration des jetons
+    private void drawGemStones(Graphics2D g, Player p, int x, int y){
         int tokenWidth = 100;
         int tokenHeight = 50;
         int tokenSpacing = 10;
         int startX = x + PADDING;
         int startY = y + PADDING + 10;
 
-        // Couleurs des jetons
-        Color[] tokenColors = {
-                new Color(210, 210, 210),  // Blanc
-                new Color(0, 102, 204),    // Bleu
-                new Color(0, 128, 0),      // Vert
-                new Color(204, 0, 0),      // Rouge
-                new Color(30, 30, 30),     // Noir
-                new Color(212, 175, 55)    // Or
-        };
+        GemToken[] tokens = GemToken.values();
 
-        // Dessin des 6 jetons
-        for (int i = 0; i < 6; i++) {
+        for (int i = 0; i < tokens.length; i++) {
+            GemToken token = tokens[i];
             int tokenX = startX + i * (tokenWidth + tokenSpacing);
 
-            // Fond du jeton (sans bordure)
-            g.setColor(tokenColors[i]);
+            Color tokenColor = TOKEN_COLORS.getOrDefault(token, Color.GRAY);
+            g.setColor(tokenColor);
             g.fillRect(tokenX, startY, tokenWidth, tokenHeight);
 
-            // Partie gauche (Bonus) - 30% de largeur
             int bonusWidth = (int)(tokenWidth * 0.3);
             g.setColor(new Color(255, 255, 255, 100));
             g.fillRect(tokenX, startY, bonusWidth, tokenHeight);
 
-            // Texte bonus
             g.setColor(Color.WHITE);
-            g.setFont(new Font("SansSerif", Font.BOLD, 14));
-            String bonusText = "0"; // Valeur de bonus
+            g.setFont(BUBBLE_FONT);  // police définie ailleurs
+            String bonusText = "0";  // valeur statique, peut être dynamique si besoin
             int bonusTextWidth = g.getFontMetrics().stringWidth(bonusText);
             g.drawString(bonusText,
-                    tokenX + (bonusWidth - bonusTextWidth)/2,
-                    startY + tokenHeight/2 + 5);
+                    tokenX + (bonusWidth - bonusTextWidth) / 2,
+                    startY + tokenHeight / 2 + 5);
 
-            // Partie droite (Tokens) - 70% de largeur
             int tokensWidth = tokenWidth - bonusWidth;
-            GemToken[] tokens = GemToken.values();
-            GemToken token = tokens[i];
             int count = p.getTokenCount(token);
             String countText = String.valueOf(count);
-
-            // Texte nombre de tokens
-            g.setFont(new Font("SansSerif", Font.BOLD, 16));
+            g.setFont(PLAYER_TOKEN_COUNT_FONT);
             int countTextWidth = g.getFontMetrics().stringWidth(countText);
             g.drawString(countText,
-                    tokenX + bonusWidth + (tokensWidth - countTextWidth)/2,
-                    startY + tokenHeight/2 + 5);
+                    tokenX + bonusWidth + (tokensWidth - countTextWidth) / 2,
+                    startY + tokenHeight / 2 + 5);
         }
+    }
+
+    private void drawPlayerGemStones(Graphics2D g, Player p, int width) {
+        int rectHeight = 90;
+        int x = 500;
+        int y = 720;
+        int PADDING = 15;
+
+        drawFramedPanel(g, x, y, width, rectHeight);
+
+        int titleBubbleWidth = 180;
+        int titleBubbleHeight = 30;
+        int titleBubbleX = x + (width - titleBubbleWidth) / 2;
+        int titleBubbleY = y - 15;
+        drawBubble(g, "Pierres précieuses", titleBubbleX, titleBubbleY, titleBubbleWidth, titleBubbleHeight);
+
+        int totalGems = p.getTotalAmount();
+        String counterText = totalGems + "/10";
+        int counterBubbleWidth = 50;
+        int counterBubbleX = x + width - counterBubbleWidth - PADDING;
+        int counterBubbleY = y - 15;
+        drawBubble(g, counterText, counterBubbleX, counterBubbleY, counterBubbleWidth, titleBubbleHeight);
+
+        drawGemStones(g, p, x, y);
     }
 
 
@@ -261,7 +259,6 @@ public final class GraphicView implements SplendorsView{
                     int y = yStart + (3 - level) * (CARD_HEIGHT + PADDING);
                     g.drawImage(backImage, x, y, CARD_WIDTH, CARD_HEIGHT, null);
 
-                    // Cercle blanc en haut à gauche avec le nombre de cartes
                     int count = stackSizes.get(3 - level);
                     int circleSize = 32;
                     int circleX = x + 8;
@@ -271,7 +268,7 @@ public final class GraphicView implements SplendorsView{
                     g.fillOval(circleX, circleY, circleSize, circleSize);
 
                     g.setColor(Color.BLACK);
-                    g.setFont(new Font("SansSerif", Font.BOLD, 16));
+                    g.setFont(CARD_STACK_AMOUNT_FONT);
                     FontMetrics fm = g.getFontMetrics();
                     String text = String.valueOf(count);
                     int textWidth = fm.stringWidth(text);
@@ -286,16 +283,12 @@ public final class GraphicView implements SplendorsView{
         }
     }
 
-
     private void drawCards(Graphics2D g, List<DevelopmentCard> cards) {
-        g.setFont(new Font("SansSerif", Font.PLAIN, 24));
         int cardsPerRow = 4;
         int startX = 500;
 
-        // Nombre total de lignes (arrondi vers le haut)
         int totalRows = (int) Math.ceil(cards.size() / (double) cardsPerRow);
 
-        // Position de la première ligne (en bas)
         int startY = 100 + (totalRows - 1) * (CARD_HEIGHT + PADDING);
 
         for (int i = 0; i < cards.size(); i++) {
@@ -326,16 +319,12 @@ public final class GraphicView implements SplendorsView{
         }
     }
 
-
-    private void drawCardToken(Graphics2D g, GemToken bonus, int amount, int cx, int cy, int size) {
-        g.setColor(TOKEN_COLORS.get(bonus));
-        g.fillOval(cx, cy, size, size);
-
-        g.setFont(new Font("SansSerif", Font.BOLD, 16));
+    private void drawNumber(Graphics2D g, Font font, int amount, int cx, int cy, int sizeX, int sizeY){
+        g.setFont(font);
         String text = String.valueOf(amount);
         FontMetrics fm = g.getFontMetrics();
-        int tx = cx + (size - fm.stringWidth(text)) / 2;
-        int ty = cy + ((size - fm.getHeight()) / 2) + fm.getAscent();
+        int tx = cx + (sizeX - fm.stringWidth(text)) / 2;
+        int ty = cy + ((sizeY - fm.getHeight()) / 2) + fm.getAscent();
 
         // Contour noir
         g.setColor(Color.BLACK);
@@ -350,6 +339,13 @@ public final class GraphicView implements SplendorsView{
         // Texte blanc
         g.setColor(Color.WHITE);
         g.drawString(text, tx, ty);
+    }
+
+    private void drawCardToken(Graphics2D g, GemToken bonus, int amount, int cx, int cy, int size) {
+        g.setColor(TOKEN_COLORS.get(bonus));
+        g.fillOval(cx, cy, size, size);
+
+        drawNumber(g, CARD_TOKEN_AMOUNT_FONT, amount, cx, cy, size, size);
     }
 
     private void drawNobleToken(Graphics2D g, GemToken bonus, int amount, int cx, int cy) {
@@ -358,42 +354,70 @@ public final class GraphicView implements SplendorsView{
 
         g.setColor(TOKEN_COLORS.get(bonus));
         g.fillRect(cx, cy, width, height);
-
-        g.setFont(new Font("SansSerif", Font.BOLD, 16));
-        String text = String.valueOf(amount);
-        FontMetrics fm = g.getFontMetrics();
-        int tx = cx + (width - fm.stringWidth(text)) / 2;
-        int ty = cy + ((height - fm.getHeight()) / 2) + fm.getAscent();
-
-        // Contour noir
-        g.setColor(Color.BLACK);
-        for (int dx = -1; dx <= 1; dx++) {
-            for (int dy = -1; dy <= 1; dy++) {
-                if (dx != 0 || dy != 0) {
-                    g.drawString(text, tx + dx, ty + dy);
-                }
-            }
-        }
-
-        // Texte blanc
-        g.setColor(Color.WHITE);
-        g.drawString(text, tx, ty);
+        drawNumber(g, NOBLE_TOKEN_AMOUNT_FONT, amount, cx, cy, width, height);
     }
 
+    private void drawCardCostTokens(Graphics2D g, int x, int y, DevelopmentCard card) {
+        int tokenSize = 36;
+        int padding = 4;
+        int margin = 8;
 
-    private void drawCardInfos(Graphics2D g, int x, int y, DevelopmentCard card) {
-        // Bandeau semi-transparent en haut
+        List<Map.Entry<GemToken, Integer>> cost = card.price().entrySet()
+                .stream()
+                .filter(entry -> entry.getValue() > 0)
+                .toList();
+
+        int n = cost.size();
+
+        for (int i = 0; i < n; i++) {
+            int cx, cy;
+
+            switch (n) {
+                case 1 -> {
+                    cx = x + margin;
+                    cy = y + CARD_HEIGHT - tokenSize - margin;
+                }
+                case 2 -> {
+                    cx = x + margin;
+                    cy = y + CARD_HEIGHT - (2 - i) * (tokenSize + padding) - margin;
+                }
+                case 3 -> {
+                    if (i == 0) {
+                        cx = x + margin;
+                        cy = y + CARD_HEIGHT - 2 * tokenSize - padding - margin;
+                    } else if (i == 1) {
+                        cx = x + margin;
+                        cy = y + CARD_HEIGHT - tokenSize - margin;
+                    } else {
+                        cx = x + tokenSize + padding + margin;
+                        cy = y + CARD_HEIGHT - tokenSize - margin;
+                    }
+                }
+                case 4 -> {
+                    int row = i / 2;
+                    int col = i % 2;
+                    cx = x + col * (tokenSize + padding) + margin;
+                    cy = y + CARD_HEIGHT - (2 - row) * (tokenSize + padding) + padding - margin;
+                }
+                default -> {
+                    cx = x + margin + i * (tokenSize + padding);
+                    cy = y + CARD_HEIGHT - tokenSize - margin;
+                }
+            }
+
+            drawCardToken(g, cost.get(i).getKey(), cost.get(i).getValue(), cx, cy, tokenSize);
+        }
+    }
+
+    private void drawCardHeader(Graphics2D g, int x, int y, DevelopmentCard card) {
         g.setColor(new Color(240, 240, 240, 140));
         g.fillRect(x, y, CARD_WIDTH, CARD_HEIGHT / 4);
 
-        // Prestige en haut à gauche avec contour noir
+        String prestigeText = String.valueOf(card.prestigeScore());
         int prestigeX = x + 15;
         int prestigeY = y + 30;
-        String prestigeText = String.valueOf(card.prestigeScore());
 
-        g.setFont(new Font("SansSerif", Font.BOLD, 28));
-
-        // Contour noir
+        g.setFont(CARD_PRESTIGE_FONT);
         g.setColor(Color.BLACK);
         for (int dx = -1; dx <= 1; dx++) {
             for (int dy = -1; dy <= 1; dy++) {
@@ -403,11 +427,11 @@ public final class GraphicView implements SplendorsView{
             }
         }
 
-        // Texte blanc
         g.setColor(Color.WHITE);
         g.drawString(prestigeText, prestigeX, prestigeY);
+    }
 
-        // Bonus token en haut à droite
+    private void drawCardBonusIcon(Graphics2D g, int x, int y, DevelopmentCard card) {
         try {
             String bonusName = card.bonus().toString().toLowerCase();
             InputStream in = Main.class.getResourceAsStream("../resources/images/gems/" + bonusName + ".png");
@@ -421,71 +445,16 @@ public final class GraphicView implements SplendorsView{
         } catch (IOException e) {
             e.printStackTrace();
         }
+    }
 
-        // Affichage dynamique des tokens
-        int tokenSize = 36;
-        int padding = 4;
-        int margin = 8;
-
-        Map<GemToken, Integer> price = card.price();
-        List<Map.Entry<GemToken, Integer>> cost = price.entrySet()
-                .stream()
-                .filter(entry -> entry.getValue() > 0)
-                .toList();
-
-        int n = cost.size();
-
-        for (int i = 0; i < n; i++) {
-            int cx = 0;
-            int cy = 0;
-
-            switch (n) {
-                case 1:
-                    // Bas gauche
-                    cx = x + margin;
-                    cy = y + CARD_HEIGHT - tokenSize - margin;
-                    break;
-                case 2:
-                    // Colonne bas gauche
-                    cx = x + margin;
-                    cy = y + CARD_HEIGHT - (2 - i) * (tokenSize + padding) - margin;
-                    break;
-                case 3:
-                    if (i == 0) {
-                        // Haut gauche
-                        cx = x + margin;
-                        cy = y + CARD_HEIGHT - 2 * tokenSize - padding - margin;
-                    } else if (i == 1) {
-                        // Bas gauche
-                        cx = x + margin;
-                        cy = y + CARD_HEIGHT - tokenSize - margin;
-                    } else {
-                        // À droite du second
-                        cx = x + tokenSize + padding + margin;
-                        cy = y + CARD_HEIGHT - tokenSize - margin;
-                    }
-                    break;
-                case 4:
-                    // Carré 2x2 aligné bas gauche
-                    int row = i / 2;
-                    int col = i % 2;
-                    cx = x + col * (tokenSize + padding) + margin;
-                    cy = y + CARD_HEIGHT - (2 - row) * (tokenSize + padding) + padding - margin;
-                    break;
-                default:
-                    // Fallback horizontal
-                    cx = x + margin + i * (tokenSize + padding);
-                    cy = y + CARD_HEIGHT - tokenSize - margin;
-            }
-
-            drawCardToken(g, cost.get(i).getKey(), cost.get(i).getValue(), cx, cy, tokenSize);
-        }
+    private void drawCardInfos(Graphics2D g, int x, int y, DevelopmentCard card) {
+        drawCardHeader(g, x, y, card);
+        drawCardBonusIcon(g, x, y, card);
+        drawCardCostTokens(g, x, y, card);
     }
 
     private void drawGameNobles(Graphics2D g, List<Noble> nobles, int width) {
-        g.setFont(new Font("SansSerif", Font.PLAIN, 24));
-
-        int startX = width - PLAYERS_STATE_WIDTH - 200;
+        int startX = width - PLAYER_FRAME_WIDTH - 200;
         int startY = 100;
 
         for (int i = 0; i < nobles.size(); i++) {
@@ -513,38 +482,11 @@ public final class GraphicView implements SplendorsView{
         }
     }
 
-    private void drawNobleInfos(Graphics2D g, int x, int y, Noble noble) {
-        // Bandeau semi-transparent à gauche
-        g.setColor(new Color(240, 240, 240, 140));
-        g.fillRect(x, y, NOBLE_WIDTH / 4, NOBLE_HEIGHT);
-
-        // Prestige score affiché en haut du bandeau
-        int prestigeX = x + 8;
-        int prestigeY = y + 28;
-        String prestigeText = String.valueOf(noble.prestigeScore());
-
-        g.setFont(new Font("SansSerif", Font.BOLD, 28));
-
-        // Contour noir du prestige
-        g.setColor(Color.BLACK);
-        for (int dx = -1; dx <= 1; dx++) {
-            for (int dy = -1; dy <= 1; dy++) {
-                if (dx != 0 || dy != 0) {
-                    g.drawString(prestigeText, prestigeX + dx, prestigeY + dy);
-                }
-            }
-        }
-
-        // Texte blanc du prestige
-        g.setColor(Color.WHITE);
-        g.drawString(prestigeText, prestigeX, prestigeY);
-
-        // Dessiner les tokens de bas en haut à gauche
+    private void drawNobleCostTokens(Graphics2D g, int x, int y, Noble noble) {
         int tokenSize = NOBLE_HEIGHT / 5;
         int padding = 6;
 
-        Map<GemToken, Integer> price = noble.price();
-        List<Map.Entry<GemToken, Integer>> cost = price.entrySet().stream()
+        List<Map.Entry<GemToken, Integer>> cost = noble.price().entrySet().stream()
                 .filter(entry -> entry.getValue() > 0)
                 .toList();
 
@@ -558,123 +500,119 @@ public final class GraphicView implements SplendorsView{
         }
     }
 
-    private static void drawPlayerInfo(Graphics2D g, Player player, int x, int yStart) {
-        yStart = yStart * PLAYERS_STATE_HEIGHT + 20 * yStart;
+    private void drawNoblePrestige(Graphics2D g, int x, int y, Noble noble) {
+        g.setColor(new Color(240, 240, 240, 140));
+        g.fillRect(x, y, NOBLE_WIDTH / 4, NOBLE_HEIGHT);
 
-        g.setColor(new Color(120, 120, 120, 200));
-        g.fillRoundRect(x + 5, yStart + 10, PLAYERS_STATE_WIDTH - 10, PLAYERS_STATE_HEIGHT, 50, 50);
+        String prestigeText = String.valueOf(noble.prestigeScore());
+        int prestigeX = x + 8;
+        int prestigeY = y + 28;
 
-        // Nom du joueur
+        g.setFont(NOBLE_PRESTIGE_FONT);
+
+        g.setColor(Color.BLACK);
+        for (int dx = -1; dx <= 1; dx++) {
+            for (int dy = -1; dy <= 1; dy++) {
+                if (dx != 0 || dy != 0) {
+                    g.drawString(prestigeText, prestigeX + dx, prestigeY + dy);
+                }
+            }
+        }
+
         g.setColor(Color.WHITE);
-        g.setFont(new Font("SansSerif", Font.BOLD, 24));
+        g.drawString(prestigeText, prestigeX, prestigeY);
+    }
+
+    private void drawNobleInfos(Graphics2D g, int x, int y, Noble noble) {
+        drawNoblePrestige(g, x, y, noble);
+        drawNobleCostTokens(g, x, y, noble);
+    }
+
+    private static void drawPlayerBox(Graphics2D g, int x, int yStart) {
+        g.setColor(PANEL_BACKGROUND);
+        g.fillRoundRect(x + 5, yStart + 10, PLAYER_FRAME_WIDTH - 10, PLAYER_FRAME_HEIGHT, 50, 50);
+    }
+
+    private static void drawPlayerHeader(Graphics2D g, Player player, int x, int yStart) {
+        // Nom
+        g.setColor(Color.WHITE);
+        g.setFont(PLAYER_NAME_FONT);
         g.drawString(player.getName(), x + 20, yStart + 40);
 
-
-        // Étoile et score
+        // Score avec étoile
         g.setColor(Color.YELLOW);
-        g.setFont(new Font("SansSerif", Font.BOLD, 24));
         g.drawString("★ " + player.getPrestigeScore(), x + 240, yStart + 40);
+    }
 
-        x += 20;
-
-        // === TITRE : Jetons ===
+    private static void drawPlayerTokens(Graphics2D g, Player player, int x, int y) {
         g.setColor(Color.WHITE);
-        g.setFont(new Font("SansSerif", Font.PLAIN, 18));
-        g.drawString("Jetons", x, yStart + 80);
+        g.setFont(PLAYER_INFOS_TITLE_FONT);
+        g.drawString("Jetons", x, y);
 
-        // Affiche les pièces du joueur
-        int tokenY = yStart + 100;
         int tokenX = x;
+        int tokenY = y + 20;
+
         for (Map.Entry<GemToken, Integer> entry : player.getWallet().entries()) {
             g.setColor(TOKEN_COLORS.get(entry.getKey()));
             g.fillRoundRect(tokenX, tokenY, 30, 40, 10, 10);
+
             g.setColor(Color.WHITE);
             g.drawString(String.valueOf(entry.getValue()), tokenX + 10, tokenY + 28);
+
             tokenX += 40;
         }
+    }
 
-        // === TITRE : Vos bonus ===
-        int bonusY = tokenY + 80;
-        g.setFont(new Font("SansSerif", Font.PLAIN, 18));
+    private static void drawPlayerBonuses(Graphics2D g, Player player, int x, int y) {
         g.setColor(Color.WHITE);
-        g.drawString("Bonus", x, bonusY);
-
-        // Affiche uniquement les bonus > 0
-        int bonusX = x;
-        bonusY += 10;
+        g.setFont(PLAYER_INFOS_TITLE_FONT);
+        g.drawString("Bonus", x, y);
 
         EnumMap<GemToken, Integer> bonusCounts = new EnumMap<>(GemToken.class);
         for (DevelopmentCard card : player.getPurchasedCards()) {
             GemToken bonus = card.bonus();
             bonusCounts.put(bonus, bonusCounts.getOrDefault(bonus, 0) + 1);
         }
-        for (Map.Entry<GemToken, Integer> entry : bonusCounts.entrySet()) {
-            GemToken token = entry.getKey();
-            int count = entry.getValue();
 
-            if (count > 0) {
-                Color color = TOKEN_COLORS.get(token);  // Tu dois avoir une méthode ou une map pour ça
-                g.setColor(color);
+        int bonusX = x;
+        int bonusY = y + 10;
+
+        for (Map.Entry<GemToken, Integer> entry : bonusCounts.entrySet()) {
+            if (entry.getValue() > 0) {
+                g.setColor(TOKEN_COLORS.get(entry.getKey()));
                 g.fillRoundRect(bonusX, bonusY + 10, 30, 40, 10, 10);
 
                 g.setColor(Color.WHITE);
-                g.setFont(new Font("SansSerif", Font.BOLD, 16));
-                g.drawString(String.valueOf(count), bonusX + 10, bonusY + 10 + 28);
+                g.setFont(PLAYER_INFOS_BONUS_FONT);
+                g.drawString(String.valueOf(entry.getValue()), bonusX + 10, bonusY + 38);
 
-                bonusX += 40; // Décale pour afficher le suivant à droite
+                bonusX += 40;
             }
         }
     }
 
+    private static void drawPlayerInfo(Graphics2D g, Player player, int x, int yIndex) {
+        int yStart = yIndex * PLAYER_FRAME_HEIGHT + 20 * yIndex;
+
+        drawPlayerBox(g, x, yStart);
+        drawPlayerHeader(g, player, x, yStart);
+        drawPlayerTokens(g, player, x + 20, yStart + 80);
+        drawPlayerBonuses(g, player, x + 20, yStart + 180);
+    }
+
     private void drawReservedCards(Graphics2D g, List<DevelopmentCard> cards, int width) {
-        // Dimensions générales
         int x = 370;
         int y = 850;
         int rectWidth = width / 2 + 100;
         int rectHeight = 200;
-        int cornerRadius = 20;
 
-        // Fond principal
-        g.setColor(new Color(120, 120, 120, 200));
-        g.fillRoundRect(x, y, rectWidth, rectHeight, cornerRadius, cornerRadius);
+        drawFramedPanel(g, x, y, rectWidth, rectHeight);
 
-        // Bordure
-        g.setColor(new Color(212, 175, 55));
-        g.setStroke(new BasicStroke(2));
-        g.drawRoundRect(x, y, rectWidth, rectHeight, cornerRadius, cornerRadius);
+        drawBubble(g, "Cartes réservées", x + 10, y - 15, 150, 30);
 
-        // Titre "Cartes réservées"
-        int bubbleWidth = 150;
-        int bubbleHeight = 30;
-        int bubbleX = x + 10;
-        int bubbleY = y - 15;
-
-        g.setColor(new Color(90, 90, 90));
-        g.fillRoundRect(bubbleX, bubbleY, bubbleWidth, bubbleHeight, 15, 15);
-        g.setColor(new Color(212, 175, 55));
-        g.drawRoundRect(bubbleX, bubbleY, bubbleWidth, bubbleHeight, 15, 15);
-
-        g.setColor(Color.WHITE);
-        g.setFont(new Font("SansSerif", Font.BOLD, 14));
-        String title = "Cartes réservées";
-        int textWidth = g.getFontMetrics().stringWidth(title);
-        g.drawString(title, bubbleX + (bubbleWidth - textWidth) / 2, bubbleY + 20);
-
-        // Bulle compteur
         String counterText = cards.size() + "/3";
-        int counterBubbleWidth = 50;
-        int counterBubbleX = x + rectWidth - counterBubbleWidth - 10;
+        drawBubble(g, counterText, x + rectWidth - 60, y - 15, 50, 30);
 
-        g.setColor(new Color(90, 90, 90));
-        g.fillRoundRect(counterBubbleX, bubbleY, counterBubbleWidth, bubbleHeight, 15, 15);
-        g.setColor(new Color(212, 175, 55));
-        g.drawRoundRect(counterBubbleX, bubbleY, counterBubbleWidth, bubbleHeight, 15, 15);
-
-        g.setColor(Color.WHITE);
-        textWidth = g.getFontMetrics().stringWidth(counterText);
-        g.drawString(counterText, counterBubbleX + (counterBubbleWidth - textWidth) / 2, bubbleY + 20);
-
-        // === Affichage des cartes réservées ===
         int startX = x + 20;
         int startY = y + 20;
         int spacing = 20;
@@ -704,61 +642,15 @@ public final class GraphicView implements SplendorsView{
     }
 
     private void drawPlayerNobles(Graphics2D g, List<Noble> nobles, int width) {
-        // Position et dimensions de base
         int x = 370 + width / 2 + 120;
         int y = 850;
         int rectWidth = width / 2 + 100;
         int rectHeight = 200;
-        int cornerRadius = 20;
 
-        // Fond principal
-        g.setColor(new Color(120, 120, 120, 200));
-        g.fillRoundRect(x, y, rectWidth, rectHeight, cornerRadius, cornerRadius);
+        drawFramedPanel(g, x, y, rectWidth, rectHeight);
 
-        // Bordure principale
-        g.setColor(new Color(212, 175, 55));
-        g.setStroke(new BasicStroke(2));
-        g.drawRoundRect(x, y, rectWidth, rectHeight, cornerRadius, cornerRadius);
+        drawBubble(g, "Nobles acquis", x + 10, y - 15, 150, 30);
 
-        // Bulle du titre (à gauche)
-        int bubbleWidth = 150;
-        int bubbleHeight = 30;
-        int bubbleX = x + 10;
-        int bubbleY = y - 15;
-
-        // Fond bulle titre
-        g.setColor(new Color(90, 90, 90));
-        g.fillRoundRect(bubbleX, bubbleY, bubbleWidth, bubbleHeight, 15, 15);
-
-        // Bordure bulle titre
-        g.setColor(new Color(212, 175, 55));
-        g.drawRoundRect(bubbleX, bubbleY, bubbleWidth, bubbleHeight, 15, 15);
-
-        // Texte "Nobles acquis"
-        g.setColor(Color.WHITE);
-        g.setFont(new Font("SansSerif", Font.BOLD, 14));
-        int textWidth = g.getFontMetrics().stringWidth("Nobles acquis");
-        g.drawString("Nobles acquis", bubbleX + (bubbleWidth - textWidth) / 2, bubbleY + 20);
-
-        // Bulle du compteur (à droite)
-        String counterText = nobles.size() + "/3";
-        int counterBubbleWidth = 50;
-        int counterBubbleHeight = 30;
-        int counterBubbleX = x + rectWidth - counterBubbleWidth - 10;
-        int counterBubbleY = y - 15;
-
-        g.setColor(new Color(90, 90, 90));
-        g.fillRoundRect(counterBubbleX, counterBubbleY, counterBubbleWidth, counterBubbleHeight, 15, 15);
-
-        g.setColor(new Color(212, 175, 55));
-        g.drawRoundRect(counterBubbleX, counterBubbleY, counterBubbleWidth, counterBubbleHeight, 15, 15);
-
-        g.setColor(Color.WHITE);
-        g.setFont(new Font("SansSerif", Font.BOLD, 14));
-        int countTextWidth = g.getFontMetrics().stringWidth(counterText);
-        g.drawString(counterText, counterBubbleX + (counterBubbleWidth - countTextWidth) / 2, counterBubbleY + 20);
-
-        // Affichage des nobles du joueur (horizontale dans la zone)
         int nobleX = x + 20;
         int nobleY = y + 40;
 
@@ -811,9 +703,9 @@ public final class GraphicView implements SplendorsView{
     public void showPlayerTurn(Player player) {
         int width = context.getScreenInfo().width();
         context.renderFrame(g -> {
-           drawGemStones(g, player, (width - PLAYERS_STATE_WIDTH) / 2 - 100);
-            drawReservedCards(g, player.getReservedCards(), (width - PLAYERS_STATE_WIDTH )/ 2);
-            drawPlayerNobles(g, player.getAcquiredNobles(), (width - PLAYERS_STATE_WIDTH )/ 2);
+           drawPlayerGemStones(g, player, (width - PLAYER_FRAME_WIDTH) / 2 - 100);
+            drawReservedCards(g, player.getReservedCards(), (width - PLAYER_FRAME_WIDTH )/ 2);
+            drawPlayerNobles(g, player.getAcquiredNobles(), (width - PLAYER_FRAME_WIDTH )/ 2);
         });
     }
 
@@ -822,9 +714,6 @@ public final class GraphicView implements SplendorsView{
         context.renderFrame(g -> {
             menuButtons.clear();
 
-            int buttonWidth = 290;
-            int buttonHeight = 50;
-            int spacing = 20;
             int startX = 20;
             int startY = 100;
             String[] options = {
@@ -835,28 +724,29 @@ public final class GraphicView implements SplendorsView{
                     "Acheter une carte réservée"
             };
 
-            g.setFont(new Font("SansSerif", Font.BOLD, 18));
+            g.setFont(MENU_BUTTON_FONT);
 
             for (int i = 0; i < options.length; i++) {
                 int x = startX;
-                int y = startY + i * (buttonHeight + spacing);
+                int y = startY + i * (BUTTON_HEIGHT + BUTTON_SPACING);
 
-                Rectangle rect = new Rectangle(x, y, buttonWidth, buttonHeight);
-                menuButtons.put(rect, i+1);
+                Rectangle rect = new Rectangle(x, y, BUTTON_WIDTH, BUTTON_HEIGHT);
+                menuButtons.put(rect, i + 1);
+
                 // Fond
                 g.setColor(new Color(80, 80, 80));
-                g.fillRoundRect(x, y, buttonWidth, buttonHeight, 20, 20);
+                g.fillRoundRect(x, y, BUTTON_WIDTH, BUTTON_HEIGHT, BUTTON_RADIUS, BUTTON_RADIUS);
 
                 // Bordure
                 g.setColor(Color.WHITE);
                 g.setStroke(new BasicStroke(2));
-                g.drawRoundRect(x, y, buttonWidth, buttonHeight, 20, 20);
+                g.drawRoundRect(x, y, BUTTON_WIDTH, BUTTON_HEIGHT, BUTTON_RADIUS, BUTTON_RADIUS);
 
                 // Texte centré
                 String text = options[i];
                 FontMetrics fm = g.getFontMetrics();
-                int textX = x + (buttonWidth - fm.stringWidth(text)) / 2;
-                int textY = y + (buttonHeight - fm.getHeight()) / 2 + fm.getAscent();
+                int textX = x + (BUTTON_WIDTH - fm.stringWidth(text)) / 2;
+                int textY = y + (BUTTON_HEIGHT - fm.getHeight()) / 2 + fm.getAscent();
 
                 g.setColor(Color.WHITE);
                 g.drawString(text, textX, textY);
@@ -868,16 +758,16 @@ public final class GraphicView implements SplendorsView{
     public void showBoard(Game game) {
         int width = context.getScreenInfo().width();
         context.renderFrame(g -> {
-            drawTokenImage(g, width - PLAYERS_STATE_WIDTH - 400, 100, "../resources/images/tokens/diamond_token.png", game.getBank().getAmount(GemToken.DIAMOND));
-            drawTokenImage(g, width - PLAYERS_STATE_WIDTH - 400, 200, "../resources/images/tokens/sapphire_token.png", game.getBank().getAmount(GemToken.SAPPHIRE));
-            drawTokenImage(g, width - PLAYERS_STATE_WIDTH - 400, 300, "../resources/images/tokens/emerald_token.png", game.getBank().getAmount(GemToken.EMERALD));
-            drawTokenImage(g, width - PLAYERS_STATE_WIDTH - 400, 400, "../resources/images/tokens/ruby_token.png", game.getBank().getAmount(GemToken.RUBY));
-            drawTokenImage(g, width - PLAYERS_STATE_WIDTH - 400, 500, "../resources/images/tokens/onyx_token.png", game.getBank().getAmount(GemToken.ONYX));
-            drawTokenImage(g, width - PLAYERS_STATE_WIDTH - 400, 600, "../resources/images/tokens/gold_token.png", game.getBank().getAmount(GemToken.GOLD));
+            drawTokenImage(g, width - PLAYER_FRAME_WIDTH - 400, 100, "../resources/images/tokens/diamond_token.png", game.getBank().getAmount(GemToken.DIAMOND));
+            drawTokenImage(g, width - PLAYER_FRAME_WIDTH - 400, 200, "../resources/images/tokens/sapphire_token.png", game.getBank().getAmount(GemToken.SAPPHIRE));
+            drawTokenImage(g, width - PLAYER_FRAME_WIDTH - 400, 300, "../resources/images/tokens/emerald_token.png", game.getBank().getAmount(GemToken.EMERALD));
+            drawTokenImage(g, width - PLAYER_FRAME_WIDTH - 400, 400, "../resources/images/tokens/ruby_token.png", game.getBank().getAmount(GemToken.RUBY));
+            drawTokenImage(g, width - PLAYER_FRAME_WIDTH - 400, 500, "../resources/images/tokens/onyx_token.png", game.getBank().getAmount(GemToken.ONYX));
+            drawTokenImage(g, width - PLAYER_FRAME_WIDTH - 400, 600, "../resources/images/tokens/gold_token.png", game.getBank().getAmount(GemToken.GOLD));
             showCards(game);
             int[] index = {0};
             game.getPlayers().forEach(player -> {
-                drawPlayerInfo(g, player, width - PLAYERS_STATE_WIDTH, index[0]);
+                drawPlayerInfo(g, player, width - PLAYER_FRAME_WIDTH, index[0]);
                 index[0]++;
             });
             drawGameNobles(g,game.getNobles(), width);
