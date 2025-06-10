@@ -1,10 +1,10 @@
 package splendor.model;
 
 public enum GemToken {
-    RUBY,
-    EMERALD,
     DIAMOND,
     SAPPHIRE,
+    EMERALD,
+    RUBY,
     ONYX,
     GOLD
 }

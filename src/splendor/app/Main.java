@@ -5,7 +5,7 @@ import splendor.model.CompleteGame;
 import splendor.model.SimplifiedGame;
 import splendor.util.ConsoleInput;
 import splendor.view.GraphicView;
-import splendor.view.SplendorsView;
+import splendor.view.SplendorView;
 import splendor.view.TerminalView;
 import java.util.Objects;
 import java.util.stream.IntStream;
@@ -27,8 +27,7 @@ public class Main {
         var choiceGameMode = input.askInt("Votre choix (1-2) : ", 1, 2);
         GameController controller;
 
-        SplendorsView gameView = choiceDisplay == 1 ? view :  new GraphicView();
-
+        SplendorView gameView = choiceDisplay == 1 ? view :  new GraphicView();
 
         if (choiceGameMode == 1) {
             controller = createSimplifiedGame(input, gameView);
@@ -51,7 +50,7 @@ public class Main {
         }
     }
 
-    private static GameController createSimplifiedGame(ConsoleInput input, SplendorsView view) {
+    private static GameController createSimplifiedGame(ConsoleInput input, SplendorView view) {
         SimplifiedGame game = new SimplifiedGame();
         IntStream.rangeClosed(1, 2)
                 .forEach(i -> {
@@ -61,7 +60,7 @@ public class Main {
         return new GameController(game, view);
     }
 
-    private static GameController createCompleteGame(ConsoleInput input, SplendorsView view) {
+    private static GameController createCompleteGame(ConsoleInput input, SplendorView view) {
         Objects.requireNonNull(input);
         var playerCount = input.askInt("Nombre de joueurs (2-4) : ", 2, 4);
         var game = new CompleteGame(playerCount);

@@ -4,7 +4,6 @@ import com.github.forax.zen.Application;
 import com.github.forax.zen.ApplicationContext;
 import com.github.forax.zen.Event;
 import com.github.forax.zen.PointerEvent;
-import splendor.app.Demo;
 import splendor.app.Main;
 import splendor.model.*;
 import splendor.util.ResolutionManager;
@@ -17,14 +16,13 @@ import java.io.InputStream;
 import java.util.*;
 import java.util.List;
 
-public final class GraphicView implements SplendorsView{
+public final class GraphicView implements SplendorView {
     private ApplicationContext context;
-    private final Map<Rectangle, Integer> menuButtons;
+    private final Map<Rectangle, Integer> menuButtons = new HashMap<>();
+    private final Map<Rectangle, Integer> displayedCardsAreas = new HashMap<>();
+    private final Map<Rectangle, Integer> reservedCardsAreas = new HashMap<>();
+    private final Map<Rectangle, Integer> bankTokens = new HashMap<>();
     private ResolutionManager resolutionManager;
-
-    public GraphicView() {
-        menuButtons = new HashMap<>();
-    }
 
     public static final Map<GemToken, Color> TOKEN_COLORS = new EnumMap<>(Map.of(
             GemToken.DIAMOND, new Color(210, 210, 210),
@@ -163,7 +161,7 @@ public final class GraphicView implements SplendorsView{
         g.drawString(text, textX, textY);
     }
 
-    private void drawTokenImage(Graphics2D g, int x, int y, String imagePath, int count) {
+    private void drawTokenImage(Graphics2D g, int x, int y, String imagePath, int count,int index) {
         try {
             InputStream inputStream = Main.class.getResourceAsStream(imagePath);
             if (inputStream == null) {
@@ -171,7 +169,11 @@ public final class GraphicView implements SplendorsView{
             }
             BufferedImage tokenImage = ImageIO.read(inputStream);
             int scaledSize = resolutionManager.scaleSize(70);
+            // Prevent adding gold token
+            if(index != 6){
+                bankTokens.put(new Rectangle(x, y, scaledSize, scaledSize), index);
 
+            }
             g.drawImage(tokenImage, x, y, scaledSize, scaledSize, null);
 
             drawTokenImageAmount(g, x, y, count);
@@ -351,6 +353,7 @@ public final class GraphicView implements SplendorsView{
                 if (inputStream != null) {
                     BufferedImage image = ImageIO.read(inputStream);
                     g.drawImage(image, x, y, scaledCardWidth, scaledCardHeight, null);
+                    displayedCardsAreas.put(new Rectangle(x, y, scaledCardWidth, scaledCardHeight), i);
                 } else {
                     throw new IOException("Image not found: " + card.imageUrl());
                 }
@@ -364,7 +367,6 @@ public final class GraphicView implements SplendorsView{
             drawCardInfos(g, x, y, card);
         }
     }
-
 
     private void drawNumber(Graphics2D g, Font font, int amount, int cx, int cy, int sizeX, int sizeY) {
         Font scaledFont = resolutionManager.scaleFont(font);
@@ -711,24 +713,24 @@ public final class GraphicView implements SplendorsView{
         for (int i = 0; i < cards.size(); i++) {
             DevelopmentCard card = cards.get(i);
             int cardX = startX + i * (scaledCardWidth + spacing);
-            int cardY = startY;
 
             try {
                 InputStream inputStream = Main.class.getResourceAsStream(card.imageUrl());
                 if (inputStream != null) {
                     BufferedImage image = ImageIO.read(inputStream);
-                    g.drawImage(image, cardX, cardY, scaledCardWidth, scaledCardHeight, null);
+                    reservedCardsAreas.put(new Rectangle(cardX, startY, scaledCardWidth, scaledCardHeight), i);
+                    g.drawImage(image, cardX, startY, scaledCardWidth, scaledCardHeight, null);
                 } else {
                     throw new IOException("Image not found: " + card.imageUrl());
                 }
             } catch (IOException e) {
                 g.setColor(Color.WHITE);
-                g.fillRect(cardX, cardY, scaledCardWidth, scaledCardHeight);
+                g.fillRect(cardX, startY, scaledCardWidth, scaledCardHeight);
                 g.setColor(Color.BLACK);
-                g.drawRect(cardX, cardY, scaledCardWidth, scaledCardHeight);
+                g.drawRect(cardX, startY, scaledCardWidth, scaledCardHeight);
             }
 
-            drawCardInfos(g, cardX, cardY, card); // Assurez-vous que cette fonction supporte le scaling si nécessaire
+            drawCardInfos(g, cardX, startY, card); // Assurez-vous que cette fonction supporte le scaling si nécessaire
         }
     }
 
@@ -800,7 +802,7 @@ public final class GraphicView implements SplendorsView{
     public void showPlayerTurn(Player player) {
         int width = context.getScreenInfo().width();
         int scaledPlayerFrameWidth = resolutionManager.scaleX(PLAYER_FRAME_WIDTH);
-
+        displayMessage("Joueur " + player.getName() + ", sélectionnez une action");
         context.renderFrame(g -> {
             drawPlayerGemStones(g, player, (width - scaledPlayerFrameWidth) / 2 - resolutionManager.scaleX(100));
             drawReservedCards(g, player.getReservedCards(), (width - scaledPlayerFrameWidth) / 2);
@@ -822,8 +824,8 @@ public final class GraphicView implements SplendorsView{
 
             String[] options = {
                     "Acheter une carte",
-                    "Récupérer 3 différentes",
                     "Récupérer 2 identiques",
+                    "Récupérer 3 différentes",
                     "Réserver une carte",
                     "Acheter une carte réservée"
             };
@@ -861,12 +863,12 @@ public final class GraphicView implements SplendorsView{
         int tokenBaseX = width - resolutionManager.scaleX(PLAYER_FRAME_WIDTH + 400);
 
         context.renderFrame(g -> {
-            drawTokenImage(g, tokenBaseX, resolutionManager.scaleY(100), "../resources/images/tokens/diamond_token.png", game.getBank().getAmount(GemToken.DIAMOND));
-            drawTokenImage(g, tokenBaseX, resolutionManager.scaleY(200), "../resources/images/tokens/sapphire_token.png", game.getBank().getAmount(GemToken.SAPPHIRE));
-            drawTokenImage(g, tokenBaseX, resolutionManager.scaleY(300), "../resources/images/tokens/emerald_token.png", game.getBank().getAmount(GemToken.EMERALD));
-            drawTokenImage(g, tokenBaseX, resolutionManager.scaleY(400), "../resources/images/tokens/ruby_token.png", game.getBank().getAmount(GemToken.RUBY));
-            drawTokenImage(g, tokenBaseX, resolutionManager.scaleY(500), "../resources/images/tokens/onyx_token.png", game.getBank().getAmount(GemToken.ONYX));
-            drawTokenImage(g, tokenBaseX, resolutionManager.scaleY(600), "../resources/images/tokens/gold_token.png", game.getBank().getAmount(GemToken.GOLD));
+            drawTokenImage(g, tokenBaseX, resolutionManager.scaleY(100), "../resources/images/tokens/diamond_token.png", game.getBank().getAmount(GemToken.DIAMOND), 1);
+            drawTokenImage(g, tokenBaseX, resolutionManager.scaleY(200), "../resources/images/tokens/sapphire_token.png", game.getBank().getAmount(GemToken.SAPPHIRE), 2);
+            drawTokenImage(g, tokenBaseX, resolutionManager.scaleY(300), "../resources/images/tokens/emerald_token.png", game.getBank().getAmount(GemToken.EMERALD), 3);
+            drawTokenImage(g, tokenBaseX, resolutionManager.scaleY(400), "../resources/images/tokens/ruby_token.png", game.getBank().getAmount(GemToken.RUBY), 4);
+            drawTokenImage(g, tokenBaseX, resolutionManager.scaleY(500), "../resources/images/tokens/onyx_token.png", game.getBank().getAmount(GemToken.ONYX), 5);
+            drawTokenImage(g, tokenBaseX, resolutionManager.scaleY(600), "../resources/images/tokens/gold_token.png", game.getBank().getAmount(GemToken.GOLD), 6);
 
             showCards(game);
 
@@ -881,19 +883,18 @@ public final class GraphicView implements SplendorsView{
     }
 
 
-    @Override
-    public int getMenuChoice(Game game) {
+    private int waitForClickOn(Map<Rectangle, Integer> clickableAreas) {
         while (true) {
-            Event event = context.pollOrWaitEvent(0); // Attend un événement
+            Event event = context.pollOrWaitEvent(0);
 
             if (event != null) {
                 switch (event) {
                     case PointerEvent p when p.action() == PointerEvent.Action.POINTER_DOWN -> {
                         Point clickPoint = new Point(p.location().x(), p.location().y());
 
-                        for (Map.Entry<Rectangle, Integer> entry : menuButtons.entrySet()) {
+                        for (Map.Entry<Rectangle, Integer> entry : clickableAreas.entrySet()) {
                             if (entry.getKey().contains(clickPoint)) {
-                                return entry.getValue(); // Renvoie l'action liée au bouton cliqué
+                                return entry.getValue();
                             }
                         }
                     }
@@ -904,26 +905,21 @@ public final class GraphicView implements SplendorsView{
         }
     }
 
+    // Utilisation :
     @Override
-    public int selectCard(int maxIndex) {
-        while (true) {
-            Event event = context.pollOrWaitEvent(0); // Attend un événement
-            if (event != null) {
-                switch (event) {
-                    case PointerEvent p when p.action() == PointerEvent.Action.POINTER_DOWN -> {
-                        Point clickPoint = new Point(p.location().x(), p.location().y());
+    public int getMenuChoice(Game game) {
+        return waitForClickOn(menuButtons);
+    }
 
-                        for (Map.Entry<Rectangle, Integer> entry : menuButtons.entrySet()) {
-                            if (entry.getKey().contains(clickPoint)) {
-                                return entry.getValue(); // Renvoie l'action liée au bouton cliqué
-                            }
-                        }
-                    }
-                    default -> {
-                    }
-                }
-            }
-        }
+    @Override
+    public int selectCard(int maxIndex, boolean isReserved) {
+        Map<Rectangle, Integer> areaMap = isReserved ? reservedCardsAreas : displayedCardsAreas;
+        return waitForClickOn(areaMap);
+    }
+
+    @Override
+    public int selectToken(int maxIndex) {
+        return waitForClickOn(bankTokens);
     }
 
     @Override

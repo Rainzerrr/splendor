@@ -2,24 +2,24 @@
 
     import splendor.model.*;
     import splendor.util.ConsoleInput;
+    import splendor.view.GraphicView;
     import splendor.view.PlayerView;
-    import splendor.view.SplendorsView;
+    import splendor.view.SplendorView;
+    import splendor.view.TerminalView;
 
     import java.util.*;
 
     public class GameController {
         private final Game game;
-        private final SplendorsView view;
+        private final SplendorView view;
         private final PlayerController playerController;
-        private final ConsoleInput consoleInput;
         private final PlayerView playerView;
         public static final int MAX_GEMS = 10;
 
-        public GameController(Game game, SplendorsView view) {
+        public GameController(Game game, SplendorView view) {
             this.game = game;
             this.view = view;
             this.playerController = new PlayerController(new PlayerView());
-            this.consoleInput = new ConsoleInput();
             this.playerView = new PlayerView();
         }
 
@@ -74,6 +74,12 @@
                 if (actionCompleted) {
                     playerView.showWallet(player);
                     view.showBank(game.getBank());
+                }
+                else{
+                    switch(view){
+                        case TerminalView t -> {}
+                        case GraphicView g -> view.displayMessage("Action incorrect. " + player.getName() + ", sélectionnez une action dans le menu");
+                    }
                 }
             } while (!actionCompleted);
 
@@ -181,8 +187,12 @@
         private boolean handleBuyCard(Player player) {
             List<DevelopmentCard> cards = game.getDisplayedCards();
             view.showCards(game);
-            view.displayMessage("Sélectionner un development card.");
-            int choice = view.selectCard(cards.size());
+            switch(view){
+                case TerminalView t -> {}
+                case GraphicView g -> view.displayMessage("Sélectionner la carte de développement souhaitée");
+            }
+
+            int choice = view.selectCard(cards.size(), false);
             if (choice < 0) return false;
 
             DevelopmentCard card = cards.get(choice);
@@ -214,7 +224,12 @@
             List<DevelopmentCard> cards = game.getDisplayedCards();
             view.showCards(game);
 
-            int choice = view.selectCard(cards.size());
+            switch(view){
+                case TerminalView t -> {}
+                case GraphicView g -> view.displayMessage("Sélectionner la carte de développement à réserver");
+            }
+
+            int choice = view.selectCard(cards.size(), false);
             if (choice < 0) {
                 return false;
             }
@@ -232,6 +247,26 @@
             return success;
         }
 
+        public GemToken handleSelectGemToken() {
+            switch (view){
+                case TerminalView t -> {
+                    t.displayMessage("Choisissez une gemme :");
+                    System.out.println("1. DIAMOND, 2. SAPPHIRE, 3. EMERALD, 4. RUBY, 5. ONYX");
+                }
+                case GraphicView g -> {}
+            }
+
+            var choice = view.selectToken(5);
+            return switch (choice) {
+                case 1 -> GemToken.DIAMOND;
+                case 2 -> GemToken.SAPPHIRE;
+                case 3 -> GemToken.EMERALD;
+                case 4 -> GemToken.RUBY;
+                case 5 -> GemToken.ONYX;
+                default -> null;
+            };
+        }
+
         /**
          * Handles the action of picking two same gem tokens for the player.
          * It displays a message, asks the player to select a gem token, and
@@ -244,8 +279,12 @@
          * @return true if the tokens were successfully picked, false otherwise
          */
         private boolean handlePickTwoSameGems(Player player) {
-            view.displayMessage("Piochez deux même gemmes");
-            GemToken token = consoleInput.selectGemToken();
+            switch(view){
+                case TerminalView t -> {}
+                case GraphicView g -> view.displayMessage(player.getName() + ", sélectionnez le token souhaité");
+            }
+
+            GemToken token = handleSelectGemToken();
             if (token == null) return false;
             if (game.getBank().getAmount(token) < 4) {
                 view.showNotEnoughTokens();
@@ -259,11 +298,16 @@
         }
 
         private boolean handlePickThreeDifferentGems(Player player) {
+            switch(view){
+                case TerminalView t -> {}
+                case GraphicView g -> view.displayMessage(player.getName() + ", sélectionnez trois tokens différents");
+            }
+
             List<GemToken> pickedTokens = new ArrayList<>();
 
             for (int i = 0; i < 3; i++) {
                 view.showRemainingChoices(3 - i);
-                GemToken token = consoleInput.selectGemToken();
+                GemToken token = handleSelectGemToken();
 
                 if (token == null) {
                     for (GemToken t : pickedTokens) {
@@ -311,9 +355,12 @@
                 return false;
             }
 
-            playerView.showReservedCards(player);
+            switch(view){
+                case TerminalView t -> playerView.showReservedCards(player);
+                case GraphicView g -> view.displayMessage(player.getName() + ", sélectionnez la carte réservée à acheter");
+            }
 
-            int choice = view.selectCard(reserved.size());
+            int choice = view.selectCard(reserved.size(), true);
             if (choice < 0) {
                 view.displayMessage("Achat annulé.");
                 return false;
@@ -339,7 +386,7 @@
         /**
          * Si besoin d'afficher le classement final en console
          */
-        public SplendorsView getView() {
+        public SplendorView getView() {
             return view;
         }
 

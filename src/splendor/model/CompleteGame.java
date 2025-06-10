@@ -10,6 +10,8 @@ public final class CompleteGame implements Game {
     private final GemStock bank;
     private final Map<Integer, LinkedList<DevelopmentCard>> cardDecks;
     private final Map<Integer, List<DevelopmentCard>> displayedCards;
+
+
     private List<Noble> nobles;
     private final int playerCount;
 

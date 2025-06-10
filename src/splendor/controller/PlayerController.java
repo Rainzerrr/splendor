@@ -60,6 +60,4 @@ public class PlayerController {
             bank.remove(entry.getKey(), entry.getValue());
         }
     }
-
-
 }

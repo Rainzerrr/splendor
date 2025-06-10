@@ -14,7 +14,7 @@ public class Player {
 
     public Player(String name) {
         Objects.requireNonNull(name);
-        this.wallet = new GemStock(2, 0);
+        this.wallet = new GemStock(0, 0);
         this.purchasedCards = new ArrayList<>();
         this.reservedCards = new ArrayList<>();
         this.name = name;

@@ -9,7 +9,7 @@ import java.util.Objects;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
-public final class TerminalView implements SplendorsView {
+public final class TerminalView implements SplendorView {
     private final ConsoleInput input = new ConsoleInput();
 // TODO add game as attribute to avoid function parameters
     /**
@@ -150,8 +150,20 @@ public final class TerminalView implements SplendorsView {
      * @return the index of the card selected by the user, or -1 if 0 was
      *         chosen.
      */
-    public int selectCard(int maxIndex) {
+    public int selectCard(int maxIndex, boolean isReserved) {
         return input.askInt("Sélectionnez une carte (1-" + maxIndex + ", 0 pour annuler) : ", 0, maxIndex) - 1;
+    }
+
+    /**
+     * Displays a prompt to the user to select a token from a list, and
+     * returns the index of the selected token (or -1 if 0 is chosen).
+     *
+     * @param maxIndex the maximum valid index of the list (1-indexed)
+     * @return the index of the card selected by the user, or -1 if 0 was
+     *         chosen.
+     */
+    public int selectToken(int maxIndex) {
+        return input.askInt("Votre choix (1-5, 0 pour revenir au menu) : ", 0, maxIndex) - 1;
     }
 
     /* ---- Display of messages ---- */
