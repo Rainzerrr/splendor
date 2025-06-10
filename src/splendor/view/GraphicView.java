@@ -18,6 +18,8 @@ import java.util.List;
 
 public final class GraphicView implements SplendorsView{
     private ApplicationContext context;
+    private int screenWidth;
+    private int screenHeight;
     private final Map<Rectangle, Integer> menuButtons;
 
     public GraphicView() {
@@ -94,27 +96,36 @@ public final class GraphicView implements SplendorsView{
         g.drawImage(image, 0, 0, null);
     }
 
-    private void drawHeader(Graphics2D g, String message, int screenWidth) {
-        // Rectangle
-        g.setColor(Color.WHITE);
-        g.fillRect(0, 10, screenWidth - PLAYER_FRAME_WIDTH, 50);
+    private void drawHeader(Graphics2D g, String message) {
+        float headerHeightRatio = 50f / 1080f;
+        float headerTopPaddingRatio = 10f / 1080f;
+        float playerFrameWidthRatio = PLAYER_FRAME_WIDTH / 1920f;
 
-        // Texte (centrage précis)
+        int headerHeight = (int)(screenHeight * headerHeightRatio);
+        int headerTopPadding = (int)(screenHeight * headerTopPaddingRatio);
+        int playerFrameWidth = (int)(screenWidth * playerFrameWidthRatio);
+
+        g.setColor(Color.WHITE);
+        g.fillRect(0, headerTopPadding, screenWidth - playerFrameWidth, headerHeight);
+
         g.setFont(HEADER_FONT);
+        Font adjustedFont = HEADER_FONT.deriveFont(HEADER_FONT.getSize() * screenHeight / 1080f);
+        g.setFont(adjustedFont);
+
         FontMetrics fm = g.getFontMetrics();
-        int textX = ((screenWidth - PLAYER_FRAME_WIDTH) - fm.stringWidth(message)) / 2;
-        int textY = (50 - fm.getHeight()) / 2 + fm.getAscent() + 10;
+        int textX = ((screenWidth - playerFrameWidth) - fm.stringWidth(message)) / 2;
+        int textY = (headerHeight - fm.getHeight()) / 2 + fm.getAscent() + headerTopPadding;
         g.setColor(Color.BLACK);
         g.drawString(message, textX, textY);
     }
 
     // Méthode appelée à chaque frame
     private void draw(Graphics2D g) {
-        int width = context.getScreenInfo().width();
-
+        screenWidth = context.getScreenInfo().width();
+        screenHeight = context.getScreenInfo().height();
         try {
             drawBackground(g);
-            drawHeader(g, "Au tour d'alice", width);
+            drawHeader(g, "Au tour d'alice");
             // autres appels de rendering avec currentGame / currentPlayer
         } catch (IOException e) {
             e.printStackTrace();
@@ -679,7 +690,7 @@ public final class GraphicView implements SplendorsView{
 
     @Override
     public void displayMessage(String message) {
-        context.renderFrame(g -> drawHeader(g, message, context.getScreenInfo().width()));
+        context.renderFrame(g -> drawHeader(g, message));
     }
 
     @Override
