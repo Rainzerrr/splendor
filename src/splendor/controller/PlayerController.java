@@ -1,4 +1,5 @@
 package splendor.controller;
+
 import splendor.model.*;
 import splendor.view.PlayerView;
 
@@ -9,11 +10,15 @@ public class PlayerController {
     private final PlayerView view;
 
     public PlayerController(PlayerView view) {
-        Objects.requireNonNull(view);
+        Objects.requireNonNull(view, "view cannot be null");
         this.view = view;
     }
 
     public boolean buyCard(Player player, DevelopmentCard card, GemStock bank) {
+        Objects.requireNonNull(player, "player cannot be null");
+        Objects.requireNonNull(card, "card cannot be null");
+        Objects.requireNonNull(bank, "bank cannot be null");
+
         Map<GemToken, Integer> missing = player.calculateMissingGems(card);
         var totalGoldNeeded = missing.values().stream().mapToInt(Integer::intValue).sum();
 
@@ -45,6 +50,10 @@ public class PlayerController {
     }
 
     public boolean reserveCard(Player player, DevelopmentCard card, GemStock bank) {
+        Objects.requireNonNull(player, "player cannot be null");
+        Objects.requireNonNull(card, "card cannot be null");
+        Objects.requireNonNull(bank, "bank cannot be null");
+
         boolean success = player.reserveCard(card, bank);
         if (success) {
             view.showReservationSuccess(card);
@@ -55,6 +64,10 @@ public class PlayerController {
     }
 
     public void takeTokens(Player player, Map<GemToken, Integer> tokens, GemStock bank) {
+        Objects.requireNonNull(player, "player cannot be null");
+        Objects.requireNonNull(tokens, "tokens cannot be null");
+        Objects.requireNonNull(bank, "bank cannot be null");
+
         for (Map.Entry<GemToken, Integer> entry : tokens.entrySet()) {
             player.add(entry.getKey(), entry.getValue());
             bank.remove(entry.getKey(), entry.getValue());

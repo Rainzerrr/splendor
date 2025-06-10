@@ -1,6 +1,7 @@
 package splendor.util;
 
 import java.awt.*;
+import java.util.Objects;
 
 public class ResolutionManager {
     private final int referenceWidth = 1920;
@@ -11,30 +12,46 @@ public class ResolutionManager {
     private float heightRatio;
 
     public ResolutionManager(int currentWidth, int currentHeight) {
+        if (currentWidth <= 0 || currentHeight <= 0) {
+            throw new IllegalArgumentException("Width and height must be positive");
+        }
+
         this.currentWidth = currentWidth;
         this.currentHeight = currentHeight;
-        this.widthRatio = (float)currentWidth / referenceWidth;
-        this.heightRatio = (float)currentHeight / referenceHeight;
+        this.widthRatio = (float) currentWidth / referenceWidth;
+        this.heightRatio = (float) currentHeight / referenceHeight;
     }
 
     public int scaleX(int x) {
-        return (int)(x * widthRatio);
+        if (x < 0) {
+            throw new IllegalArgumentException("Scale X value must not be negative");
+        }
+        return (int) (x * widthRatio);
     }
 
     public int scaleY(int y) {
-        return (int)(y * heightRatio);
+        if (y < 0) {
+            throw new IllegalArgumentException("Scale Y value must not be negative");
+        }
+        return (int) (y * heightRatio);
     }
 
     public int scaleFontSize(int fontSize) {
-        return (int)(fontSize * Math.min(widthRatio, heightRatio));
+        if (fontSize < 0) {
+            throw new IllegalArgumentException("Font size must not be negative");
+        }
+        return (int) (fontSize * Math.min(widthRatio, heightRatio));
     }
 
     public Font scaleFont(Font font) {
-        return font.deriveFont((float)scaleFontSize(font.getSize()));
+        Objects.requireNonNull(font, "Font cannot be null");
+        return font.deriveFont((float) scaleFontSize(font.getSize()));
     }
 
-    // Pour les dimensions qui doivent s'adapter dans les deux axes
     public int scaleSize(int size) {
-        return (int)(size * (widthRatio + heightRatio) / 2);
+        if (size < 0) {
+            throw new IllegalArgumentException("Size to scale must not be negative");
+        }
+        return (int) (size * (widthRatio + heightRatio) / 2);
     }
 }

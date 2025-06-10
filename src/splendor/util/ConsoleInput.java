@@ -14,7 +14,7 @@ public class ConsoleInput {
             System.out.print(prompt);
             try {
                 int input = scanner.nextInt();
-                scanner.nextLine(); // Consume newline
+                scanner.nextLine();
                 if (input < min || input > max) {
                     System.out.println("Veuillez entrer un nombre entre " + min + " et " + max + ".");
                 } else {
@@ -22,7 +22,7 @@ public class ConsoleInput {
                 }
             } catch (Exception e) {
                 System.out.println("Erreur : veuillez entrer un nombre valide.");
-                scanner.nextLine(); // Clear invalid input
+                scanner.nextLine();
             }
         }
     }

@@ -5,11 +5,13 @@ import java.util.Map;
 import java.util.Objects;
 
 public record Noble(String name, EnumMap<GemToken, Integer> price, int prestigeScore, String imageUrl) {
-    public Noble{
-        Objects.requireNonNull(name);
-        Objects.requireNonNull(price);
-        if(prestigeScore < 0){
-            throw new IllegalArgumentException("The prestige score must be positive");
+    public Noble {
+        Objects.requireNonNull(name, "Name cannot be null");
+        Objects.requireNonNull(price, "Price cannot be null");
+        Objects.requireNonNull(imageUrl, "Image URL cannot be null");
+
+        if (prestigeScore < 0) {
+            throw new IllegalArgumentException("Prestige score must not be negative");
         }
     }
 
@@ -24,7 +26,7 @@ public record Noble(String name, EnumMap<GemToken, Integer> price, int prestigeS
         }
         priceBuilder.append("]");
 
-        return  "[Name: " + name + ", Requirement: " + priceBuilder +
+        return "[Name: " + name + ", Requirement: " + priceBuilder +
                 ", Prestige: " + prestigeScore + "]";
     }
 }

@@ -58,7 +58,8 @@
          * - Displays the updated state of the game
          */
         private void handlePlayerTurn(Player player) {
-            view.showPlayerTurn(player);
+            Objects.requireNonNull(player, "player cannot be null");
+            view.showPlayerTurn(player, game);
             view.showBoard(game);
 
             var playerView = new PlayerView();
@@ -68,7 +69,6 @@
             do {
                 view.showMenu(game);
                 var action = view.getMenuChoice(game);
-                System.out.println("Action sélectionnée : " + action);
                 actionCompleted = handleAction(action, player, game);
 
                 if (actionCompleted) {
@@ -90,6 +90,7 @@
         }
 
         private void enforceGemLimit(Player player) {
+            Objects.requireNonNull(player, "player cannot be null");
             int total = player.getTotalAmount();
             if (total <= MAX_GEMS) return;
 
@@ -116,7 +117,8 @@
          * @return true if the action was successfully completed, false otherwise
          */
         private boolean handleAction(int action, Player player, Game game) {
-            Objects.requireNonNull(player);
+            Objects.requireNonNull(player, "player cannot be null");
+            Objects.requireNonNull(game, "game cannot be null");
             if (action < 0) {
                 throw new IllegalArgumentException("Invalid action code: " + action);
             }
@@ -138,6 +140,12 @@
          *         was to display information or if the action code is unrecognized
          */
         private boolean handleCompleteGameAction(int action, Player player) {
+            Objects.requireNonNull(player, "player cannot be null");
+            Objects.requireNonNull(game, "game cannot be null");
+
+            if (action < 0) {
+                throw new IllegalArgumentException("action must not be negative");
+            }
             return switch (action) {
                 case 1 -> handleBuyCard(player);
                 case 2 -> handlePickTwoSameGems(player);
@@ -164,6 +172,11 @@
          *         was to display information or if the action code is unrecognized
          */
         private boolean handleSimplifiedGameAction(int action, Player player) {
+            Objects.requireNonNull(player, "player cannot be null");
+
+            if (action < 0) {
+                throw new IllegalArgumentException("action must not be negative");
+            }
             return switch (action) {
                 case 1 -> handleBuyCard(player);
                 case 2 -> handlePickTwoSameGems(player);
@@ -185,11 +198,12 @@
          *         the card couldn't be bought
          */
         private boolean handleBuyCard(Player player) {
+            Objects.requireNonNull(player, "player cannot be null");
             List<DevelopmentCard> cards = game.getDisplayedCards();
             view.showCards(game);
             switch(view){
                 case TerminalView t -> {}
-                case GraphicView g -> view.displayMessage("Sélectionner la carte de développement souhaitée");
+                case GraphicView g -> view.displayMessage("Sélectionner la carte de développement à acheter");
             }
 
             int choice = view.selectCard(cards.size(), false);
@@ -216,6 +230,7 @@
          * @return true if the card was successfully reserved, false otherwise
          */
         private boolean handleReserveCard(Player player) {
+            Objects.requireNonNull(player, "player cannot be null");
             if (player.getReservedCards().size() >= 3) {
                 view.displayMessage("Vous avez déjà 3 cartes réservées, vous ne pouvez pas en réserver d'autres.");
                 return false;
@@ -251,7 +266,7 @@
             switch (view){
                 case TerminalView t -> {
                     t.displayMessage("Choisissez une gemme :");
-                    System.out.println("1. DIAMOND, 2. SAPPHIRE, 3. EMERALD, 4. RUBY, 5. ONYX");
+                    t.displayMessage("1. DIAMOND, 2. SAPPHIRE, 3. EMERALD, 4. RUBY, 5. ONYX");
                 }
                 case GraphicView g -> {}
             }
@@ -279,6 +294,7 @@
          * @return true if the tokens were successfully picked, false otherwise
          */
         private boolean handlePickTwoSameGems(Player player) {
+            Objects.requireNonNull(player, "player cannot be null");
             switch(view){
                 case TerminalView t -> {}
                 case GraphicView g -> view.displayMessage(player.getName() + ", sélectionnez le token souhaité");
@@ -298,6 +314,7 @@
         }
 
         private boolean handlePickThreeDifferentGems(Player player) {
+            Objects.requireNonNull(player, "player cannot be null");
             switch(view){
                 case TerminalView t -> {}
                 case GraphicView g -> view.displayMessage(player.getName() + ", sélectionnez trois tokens différents");
@@ -349,6 +366,7 @@
          *         the card couldn't be bought
          */
         private boolean handleBuyReservedCard(Player player) {
+            Objects.requireNonNull(player, "player cannot be null");
             List<DevelopmentCard> reserved = player.getReservedCards();
             if (reserved.isEmpty()) {
                 view.displayMessage("Vous n'avez aucune carte réservée à acheter.");
@@ -380,6 +398,11 @@
         }
 
         public boolean processAction(int action, Player player) {
+            Objects.requireNonNull(player, "player cannot be null");
+
+            if (action < 0) {
+                throw new IllegalArgumentException("action must not be negative");
+            }
             return handleAction(action, player, game);
         }
 

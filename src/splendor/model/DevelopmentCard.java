@@ -4,21 +4,19 @@ import java.util.EnumMap;
 import java.util.Objects;
 
 public record DevelopmentCard(EnumMap<GemToken, Integer> price, GemToken bonus, int prestigeScore, int level, String imageUrl) {
-    public DevelopmentCard{
-        if(prestigeScore < 0){
-            throw new IllegalArgumentException("The prestige score must be positive");
+    public DevelopmentCard {
+        Objects.requireNonNull(price, "price cannot be null");
+        Objects.requireNonNull(bonus, "bonus cannot be null");
+        Objects.requireNonNull(imageUrl, "imageUrl cannot be null");
+
+        if (prestigeScore < 0) {
+            throw new IllegalArgumentException("prestigeScore must not be negative");
         }
-        Objects.requireNonNull(price);
-        Objects.requireNonNull(bonus);
+        if (level < 1 || level > 3) {
+            throw new IllegalArgumentException("level must be between 1 and 3");
+        }
     }
 
-    /**
-     * Returns a string representation of the DevelopmentCard object.
-     * The format includes the price as a list of GemToken types with their counts,
-     * the bonus GemToken, and the prestige score.
-     *
-     * @return a string in the format "[Price: [GemToken(count), ...], Bonus: GemToken, Prestige: int]"
-     */
     @Override
     public String toString() {
         var priceBuilder = new StringBuilder("[");

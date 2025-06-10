@@ -78,19 +78,24 @@ public final class GraphicView implements SplendorView {
         Application.run(Color.BLUE.darker(), context -> {
             setContext(context);
             setResolutionManager(context.getScreenInfo().width(), context.getScreenInfo().height());
-            context.renderFrame(this::draw);
         });
     }
 
     public void setContext(ApplicationContext context) {
+        Objects.requireNonNull(context, "context cannot be null");
         this.context = context;
     }
 
     public void setResolutionManager(int width, int height) {
+        if (width < 0 || height < 0) {
+            throw new IllegalArgumentException("width and height must not be negative");
+        }
         this.resolutionManager = new ResolutionManager(width, height);
     }
 
     private void drawBackground(Graphics2D g) throws IOException {
+        Objects.requireNonNull(g, "g cannot be null");
+
         InputStream inputStream = Main.class.getResourceAsStream("../resources/images/background.png");
         if (inputStream == null) {
             throw new IOException("Image not found in resources!");
@@ -101,7 +106,8 @@ public final class GraphicView implements SplendorView {
     }
 
     private void drawHeader(Graphics2D g, String message) {
-        // Utilisation du ResolutionManager pour toutes les dimensions
+        Objects.requireNonNull(g, "g cannot be null");
+        Objects.requireNonNull(message, "message cannot be null");
         g.setColor(Color.WHITE);
         int headerWidth = resolutionManager.scaleX(1920 - PLAYER_FRAME_WIDTH);
         int headerHeight = resolutionManager.scaleY(50);
@@ -109,7 +115,6 @@ public final class GraphicView implements SplendorView {
 
         g.fillRect(0, topPadding, headerWidth, headerHeight);
 
-        // Texte
         Font adjustedFont = resolutionManager.scaleFont(HEADER_FONT);
         g.setFont(adjustedFont);
 
@@ -121,18 +126,22 @@ public final class GraphicView implements SplendorView {
         g.drawString(message, textX, textY);
     }
 
-    // Méthode appelée à chaque frame
     private void draw(Graphics2D g) {
+        Objects.requireNonNull(g, "g cannot be null");
+
         try {
             drawBackground(g);
-            drawHeader(g, "Au tour d'alice");
-            // autres appels de rendering avec currentGame / currentPlayer
         } catch (IOException e) {
             e.printStackTrace();
         }
     }
 
     private void drawTokenImageAmount(Graphics2D g, int x, int y, int count) {
+        Objects.requireNonNull(g, "g cannot be null");
+        if (x < 0 || y < 0 || count < 0) {
+            throw new IllegalArgumentException("x, y and count must not be negative");
+        }
+
         int circleRadius = resolutionManager.scaleSize(14);
         int PADDING = resolutionManager.scaleSize(4);
         int verticalOffset = resolutionManager.scaleSize(8);
@@ -162,6 +171,12 @@ public final class GraphicView implements SplendorView {
     }
 
     private void drawTokenImage(Graphics2D g, int x, int y, String imagePath, int count,int index) {
+        Objects.requireNonNull(g, "Graphics2D (g) cannot be null");
+        Objects.requireNonNull(imagePath, "Image path cannot be null");
+
+        if (x < 0 || y < 0 || count < 0 || index < 0) {
+            throw new IllegalArgumentException("x, y, count, and index must not be negative");
+        }
         try {
             InputStream inputStream = Main.class.getResourceAsStream(imagePath);
             if (inputStream == null) {
@@ -184,6 +199,11 @@ public final class GraphicView implements SplendorView {
     }
 
     private void drawFramedPanel(Graphics2D g, int x, int y, int width, int height) {
+        Objects.requireNonNull(g, "Graphics2D (g) cannot be null");
+
+        if (x < 0 || y < 0 || width < 0 || height < 0) {
+            throw new IllegalArgumentException("x, y, width, and height must not be negative");
+        }
         int scaledCornerRadius = resolutionManager.scaleSize(CORNER_RADIUS);
         int scaledBorder = resolutionManager.scaleSize(2);
 
@@ -195,7 +215,14 @@ public final class GraphicView implements SplendorView {
         g.drawRoundRect(x, y, width, height, scaledCornerRadius, scaledCornerRadius);
     }
 
+
     private void drawBubble(Graphics2D g, String text, int x, int y, int width, int height) {
+        Objects.requireNonNull(g, "Graphics2D (g) cannot be null");
+        Objects.requireNonNull(text, "Text cannot be null");
+
+        if (x < 0 || y < 0 || width < 0 || height < 0) {
+            throw new IllegalArgumentException("x, y, width, and height must not be negative");
+        }
         int scaledBubbleRadius = resolutionManager.scaleSize(15);
 
         g.setColor(BUBBLE_BACKGROUND);
@@ -219,6 +246,13 @@ public final class GraphicView implements SplendorView {
     }
 
     private void drawGemStones(Graphics2D g, Player p, int x, int y) {
+        Objects.requireNonNull(g, "Graphics2D (g) cannot be null");
+        Objects.requireNonNull(p, "Player (p) cannot be null");
+
+        if (x < 0 || y < 0) {
+            throw new IllegalArgumentException("x and y must not be negative");
+        }
+
         int tokenWidth = resolutionManager.scaleSize(100);
         int tokenHeight = resolutionManager.scaleSize(50);
         int tokenSpacing = resolutionManager.scaleSize(10);
@@ -239,7 +273,7 @@ public final class GraphicView implements SplendorView {
 
             g.setColor(Color.WHITE);
             g.setFont(resolutionManager.scaleFont(BUBBLE_FONT));
-            String bonusText = "0";  // Peut être remplacé par une valeur dynamique
+            String bonusText = "0";
             int bonusTextWidth = g.getFontMetrics().stringWidth(bonusText);
             g.drawString(
                     bonusText,
@@ -347,7 +381,7 @@ public final class GraphicView implements SplendorView {
             int col = i % cardsPerRow;
 
             int x = startX + col * (scaledCardWidth + scaledPadding);
-            int y = startY - row * (scaledCardHeight + scaledPadding); // ligne 0 en bas
+            int y = startY - row * (scaledCardHeight + scaledPadding);
 
             try (InputStream inputStream = Main.class.getResourceAsStream(card.imageUrl())) {
                 if (inputStream != null) {
@@ -413,7 +447,7 @@ public final class GraphicView implements SplendorView {
         int tokenSize = resolutionManager.scaleSize(36);
         int padding = resolutionManager.scaleSize(4);
         int margin = resolutionManager.scaleSize(8);
-        int cardHeight = resolutionManager.scaleSize(CARD_HEIGHT); // Assure toi que CARD_HEIGHT est adaptable
+        int cardHeight = resolutionManager.scaleSize(CARD_HEIGHT);
 
         List<Map.Entry<GemToken, Integer>> cost = card.price().entrySet()
                 .stream()
@@ -475,7 +509,7 @@ public final class GraphicView implements SplendorView {
 
         String prestigeText = String.valueOf(card.prestigeScore());
 
-        g.setFont(resolutionManager.scaleFont(CARD_PRESTIGE_FONT)); // Assure-toi que scaleFont existe
+        g.setFont(resolutionManager.scaleFont(CARD_PRESTIGE_FONT));
         g.setColor(Color.BLACK);
         for (int dx = -1; dx <= 1; dx++) {
             for (int dy = -1; dy <= 1; dy++) {
@@ -542,7 +576,7 @@ public final class GraphicView implements SplendorView {
                 g.drawRect(x, y, nobleWidth, nobleHeight);
             }
 
-            drawNobleInfos(g, x, y, noble); // À adapter aussi si nécessaire
+            drawNobleInfos(g, x, y, noble);
         }
     }
 
@@ -681,6 +715,7 @@ public final class GraphicView implements SplendorView {
     }
 
     private void drawPlayerInfo(Graphics2D g, Player player, int x, int yIndex) {
+
         int yStart = resolutionManager.scaleY(yIndex * PLAYER_FRAME_HEIGHT + 20 * yIndex);
         drawPlayerBox(g, x, yStart);
         drawPlayerHeader(g, player, x, yStart);
@@ -689,6 +724,12 @@ public final class GraphicView implements SplendorView {
     }
 
     private void drawReservedCards(Graphics2D g, List<DevelopmentCard> cards, int width) {
+        Objects.requireNonNull(g, "Graphics2D cannot be null");
+        Objects.requireNonNull(cards, "Cards list cannot be null");
+
+        if (width < 0) {
+            throw new IllegalArgumentException("Width must be non-negative");
+        }
         int x = resolutionManager.scaleX(370);
         int y = resolutionManager.scaleY(850);
         int rectWidth = width / 2 + resolutionManager.scaleX(100);
@@ -696,7 +737,7 @@ public final class GraphicView implements SplendorView {
 
         drawFramedPanel(g, x, y, rectWidth, rectHeight);
 
-        Font scaledFont = resolutionManager.scaleFont(BUBBLE_FONT); // À adapter à ta constante de font
+        Font scaledFont = resolutionManager.scaleFont(BUBBLE_FONT);
         g.setFont(scaledFont);
 
         drawBubble(g, "Cartes réservées", x + resolutionManager.scaleX(10), y - resolutionManager.scaleY(15), resolutionManager.scaleX(150), resolutionManager.scaleY(30));
@@ -730,11 +771,16 @@ public final class GraphicView implements SplendorView {
                 g.drawRect(cardX, startY, scaledCardWidth, scaledCardHeight);
             }
 
-            drawCardInfos(g, cardX, startY, card); // Assurez-vous que cette fonction supporte le scaling si nécessaire
+            drawCardInfos(g, cardX, startY, card);
         }
     }
 
     private void drawPlayerNobles(Graphics2D g, List<Noble> nobles, int width) {
+        Objects.requireNonNull(g, "Graphics2D context cannot be null.");
+        Objects.requireNonNull(nobles, "Nobles list cannot be null.");
+        if (width < 0) {
+            throw new IllegalArgumentException("Width cannot be negative.");
+        }
         int x = width / 2 + resolutionManager.scaleX(370 + 120);
         int y = resolutionManager.scaleY(850);
         int rectWidth = width / 2 + resolutionManager.scaleX(100);
@@ -742,7 +788,7 @@ public final class GraphicView implements SplendorView {
 
         drawFramedPanel(g, x, y, rectWidth, rectHeight);
 
-        Font scaledFont = resolutionManager.scaleFont(BUBBLE_FONT); // Même remarque que plus haut
+        Font scaledFont = resolutionManager.scaleFont(BUBBLE_FONT);
         g.setFont(scaledFont);
 
         drawBubble(g, "Nobles acquis", x + resolutionManager.scaleX(10), y - resolutionManager.scaleY(15), resolutionManager.scaleX(150), resolutionManager.scaleY(30));
@@ -778,6 +824,7 @@ public final class GraphicView implements SplendorView {
 
     @Override
     public void displayMessage(String message) {
+        Objects.requireNonNull(message, "Message cannot be null.");
         context.renderFrame(g -> drawHeader(g, message));
     }
 
@@ -787,8 +834,12 @@ public final class GraphicView implements SplendorView {
 
     @Override
     public void showCards(Game game) {
+        Objects.requireNonNull(game, "Game cannot be null.");
         context.renderFrame(g -> {
-            drawCardStacks(g, resolutionManager.scaleX(350), resolutionManager.scaleY(100), game.getAmountsOfCardByLevel());
+            switch(game){
+                case SimplifiedGame s -> {}
+                case CompleteGame cg-> drawCardStacks(g, resolutionManager.scaleX(350), resolutionManager.scaleY(100), game.getAmountsOfCardByLevel());
+            }
             drawCards(g, game.getDisplayedCards());
         });
     }
@@ -799,19 +850,37 @@ public final class GraphicView implements SplendorView {
     }
 
     @Override
-    public void showPlayerTurn(Player player) {
+    public void showPlayerTurn(Player player, Game game) {
+        Objects.requireNonNull(player, "Player cannot be null.");
+        Objects.requireNonNull(game, "Game cannot be null.");
         int width = context.getScreenInfo().width();
         int scaledPlayerFrameWidth = resolutionManager.scaleX(PLAYER_FRAME_WIDTH);
-        displayMessage("Joueur " + player.getName() + ", sélectionnez une action");
+
         context.renderFrame(g -> {
+            try {
+                drawBackground(g);
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
             drawPlayerGemStones(g, player, (width - scaledPlayerFrameWidth) / 2 - resolutionManager.scaleX(100));
-            drawReservedCards(g, player.getReservedCards(), (width - scaledPlayerFrameWidth) / 2);
-            drawPlayerNobles(g, player.getAcquiredNobles(), (width - scaledPlayerFrameWidth) / 2);
+
+            switch(game){
+                case SimplifiedGame s -> {}
+                case CompleteGame cg -> {
+                    drawReservedCards(g, player.getReservedCards(), (width - scaledPlayerFrameWidth) / 2);
+
+                    drawPlayerNobles(g, player.getAcquiredNobles(), (width - scaledPlayerFrameWidth) / 2);
+                }
+            }
+
+
         });
+        displayMessage("Joueur " + player.getName() + ", sélectionnez une action");
     }
 
     @Override
     public void showMenu(Game game) {
+        Objects.requireNonNull(game);
         context.renderFrame(g -> {
             menuButtons.clear();
 
@@ -822,43 +891,68 @@ public final class GraphicView implements SplendorView {
             int scaledButtonSpacing = resolutionManager.scaleY(BUTTON_SPACING);
             int scaledButtonRadius = resolutionManager.scaleSize(BUTTON_RADIUS);
 
-            String[] options = {
+            String[] options = getMenuOptions(game);
+
+            g.setFont(resolutionManager.scaleFont(MENU_BUTTON_FONT));
+
+            renderMenuButtons(g, options, startX, startY, scaledButtonWidth, scaledButtonHeight, scaledButtonSpacing, scaledButtonRadius);
+        });
+    }
+
+    private String[] getMenuOptions(Game game) {
+        return switch (game) {
+            case CompleteGame cg -> new String[]{
                     "Acheter une carte",
                     "Récupérer 2 identiques",
                     "Récupérer 3 différentes",
                     "Réserver une carte",
                     "Acheter une carte réservée"
             };
+            case SimplifiedGame sg -> new String[]{
+                    "Acheter une carte",
+                    "Récupérer 2 identiques",
+                    "Récupérer 3 différentes"
+            };
+        };
+    }
 
-            g.setFont(resolutionManager.scaleFont(MENU_BUTTON_FONT));
+    private void renderMenuButtons(Graphics2D g, String[] options, int startX, int startY,
+                                   int buttonWidth, int buttonHeight, int buttonSpacing, int buttonRadius) {
+        Objects.requireNonNull(g, "Graphics2D (g) cannot be null.");
+        Objects.requireNonNull(options, "The options array cannot be null.");
 
-            for (int i = 0; i < options.length; i++) {
-                int x = startX;
-                int y = startY + i * (scaledButtonHeight + scaledButtonSpacing);
+        if (startX < 0 || startY < 0 || buttonWidth < 0 ||
+                buttonHeight < 0 || buttonSpacing < 0 || buttonRadius < 0) {
+            throw new IllegalArgumentException("Numeric parameters cannot be negative.");
+        }
 
-                Rectangle rect = new Rectangle(x, y, scaledButtonWidth, scaledButtonHeight);
-                menuButtons.put(rect, i + 1);
+        for (int i = 0; i < options.length; i++) {
+            int x = startX;
+            int y = startY + i * (buttonHeight + buttonSpacing);
 
-                g.setColor(new Color(80, 80, 80));
-                g.fillRoundRect(x, y, scaledButtonWidth, scaledButtonHeight, scaledButtonRadius, scaledButtonRadius);
+            Rectangle rect = new Rectangle(x, y, buttonWidth, buttonHeight);
+            menuButtons.put(rect, i + 1);
 
-                g.setColor(Color.WHITE);
-                g.setStroke(new BasicStroke(2));
-                g.drawRoundRect(x, y, scaledButtonWidth, scaledButtonHeight, scaledButtonRadius, scaledButtonRadius);
+            g.setColor(new Color(80, 80, 80));
+            g.fillRoundRect(x, y, buttonWidth, buttonHeight, buttonRadius, buttonRadius);
 
-                String text = options[i];
-                FontMetrics fm = g.getFontMetrics();
-                int textX = x + (scaledButtonWidth - fm.stringWidth(text)) / 2;
-                int textY = y + (scaledButtonHeight - fm.getHeight()) / 2 + fm.getAscent();
+            g.setColor(Color.WHITE);
+            g.setStroke(new BasicStroke(2));
+            g.drawRoundRect(x, y, buttonWidth, buttonHeight, buttonRadius, buttonRadius);
 
-                g.setColor(Color.WHITE);
-                g.drawString(text, textX, textY);
-            }
-        });
+            String text = options[i];
+            FontMetrics fm = g.getFontMetrics();
+            int textX = x + (buttonWidth - fm.stringWidth(text)) / 2;
+            int textY = y + (buttonHeight - fm.getHeight()) / 2 + fm.getAscent();
+
+            g.setColor(Color.WHITE);
+            g.drawString(text, textX, textY);
+        }
     }
 
     @Override
     public void showBoard(Game game) {
+        Objects.requireNonNull(game);
         int width = context.getScreenInfo().width();
         int tokenBaseX = width - resolutionManager.scaleX(PLAYER_FRAME_WIDTH + 400);
 
@@ -868,7 +962,6 @@ public final class GraphicView implements SplendorView {
             drawTokenImage(g, tokenBaseX, resolutionManager.scaleY(300), "../resources/images/tokens/emerald_token.png", game.getBank().getAmount(GemToken.EMERALD), 3);
             drawTokenImage(g, tokenBaseX, resolutionManager.scaleY(400), "../resources/images/tokens/ruby_token.png", game.getBank().getAmount(GemToken.RUBY), 4);
             drawTokenImage(g, tokenBaseX, resolutionManager.scaleY(500), "../resources/images/tokens/onyx_token.png", game.getBank().getAmount(GemToken.ONYX), 5);
-            drawTokenImage(g, tokenBaseX, resolutionManager.scaleY(600), "../resources/images/tokens/gold_token.png", game.getBank().getAmount(GemToken.GOLD), 6);
 
             showCards(game);
 
@@ -877,13 +970,20 @@ public final class GraphicView implements SplendorView {
                 drawPlayerInfo(g, player, width - resolutionManager.scaleSize(PLAYER_FRAME_WIDTH), index[0]);
                 index[0]++;
             });
+            switch(game){
+                case SimplifiedGame s -> {}
+                case CompleteGame c -> {
+                    drawGameNobles(g, game.getNobles(), width);
+                    drawTokenImage(g, tokenBaseX, resolutionManager.scaleY(600), "../resources/images/tokens/gold_token.png", game.getBank().getAmount(GemToken.GOLD), 6);
+                }
+            }
 
-            drawGameNobles(g, game.getNobles(), width);
         });
     }
 
 
     private int waitForClickOn(Map<Rectangle, Integer> clickableAreas) {
+        Objects.requireNonNull(clickableAreas);
         while (true) {
             Event event = context.pollOrWaitEvent(0);
 
@@ -905,20 +1005,26 @@ public final class GraphicView implements SplendorView {
         }
     }
 
-    // Utilisation :
     @Override
     public int getMenuChoice(Game game) {
+        Objects.requireNonNull(game);
         return waitForClickOn(menuButtons);
     }
 
     @Override
     public int selectCard(int maxIndex, boolean isReserved) {
+        if (maxIndex < 0) {
+            throw new IllegalArgumentException("Couldn't be negative");
+        }
         Map<Rectangle, Integer> areaMap = isReserved ? reservedCardsAreas : displayedCardsAreas;
         return waitForClickOn(areaMap);
     }
 
     @Override
     public int selectToken(int maxIndex) {
+        if (maxIndex < 0) {
+            throw new IllegalArgumentException("Couldn't be negative");
+        }
         return waitForClickOn(bankTokens);
     }
 
@@ -939,8 +1045,41 @@ public final class GraphicView implements SplendorView {
 
     @Override
     public void showFinalRanking(List<Player> players) {
+        Objects.requireNonNull(players);
+        int width = context.getScreenInfo().width();
 
+        context.renderFrame(g -> {
+            try {
+                drawBackground(g);
+            } catch (IOException _) {
+            }
+
+            drawHeader(g, "La partie est terminée, voici le classement final :");
+
+            int startX = width / 3;
+            int startY = resolutionManager.scaleY(150);
+            int spacingY = resolutionManager.scaleY(100);
+
+            Font playerFont = resolutionManager.scaleFont(MENU_BUTTON_FONT);
+            g.setFont(playerFont);
+
+            FontMetrics fm = g.getFontMetrics(playerFont);
+            int textOffsetY = fm.getAscent();
+
+            for (int i = 0; i < players.size(); i++) {
+                Player player = players.get(i);
+                int currentY = startY + i * spacingY;
+
+                String positionText = (i + 1) + ".";
+                int positionX = startX - resolutionManager.scaleX(50);
+                g.setColor(Color.WHITE);
+                g.drawString(positionText, positionX, currentY + textOffsetY);
+
+                drawPlayerHeader(g, player, startX, currentY);
+            }
+        });
     }
+
 
     @Override
     public void showTokenAlreadyTaken() {

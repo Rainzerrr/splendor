@@ -8,6 +8,7 @@ import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.EnumMap;
 import java.util.List;
+import java.util.Objects;
 
 public class DevelopmentCardLoader {
 
@@ -34,6 +35,7 @@ public class DevelopmentCardLoader {
     }
 
     private static DevelopmentCard parseCardLine(String line) {
+        Objects.requireNonNull(line, "Line cannot be null");
         String[] tokens = line.split(",");
         if (tokens.length != 9) return null;
 
@@ -60,6 +62,9 @@ public class DevelopmentCardLoader {
 
     private static void parseTokenCost(EnumMap<GemToken, Integer> price,
                                        GemToken token, String value) {
+        Objects.requireNonNull(price, "Price map cannot be null");
+        Objects.requireNonNull(token, "GemToken cannot be null");
+        Objects.requireNonNull(value, "Token value string cannot be null");
         int cost = Integer.parseInt(value.trim());
         if (cost > 0) {
             price.put(token, cost);

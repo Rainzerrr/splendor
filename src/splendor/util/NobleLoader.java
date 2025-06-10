@@ -5,6 +5,7 @@ import splendor.model.Noble;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.Objects;
 import java.util.ArrayList;
 import java.util.EnumMap;
 import java.util.List;
@@ -35,6 +36,7 @@ public class NobleLoader {
     }
 
     private static Noble parseNobleLine(String line) {
+        Objects.requireNonNull(line, "Line cannot be null");
         String[] tokens = line.split(",");
         if (tokens.length != 8) return null;
 
@@ -60,6 +62,9 @@ public class NobleLoader {
 
     private static void parseTokenCost(EnumMap<GemToken, Integer> price,
                                        GemToken token, String value) {
+        Objects.requireNonNull(price, "Price map cannot be null");
+        Objects.requireNonNull(token, "GemToken cannot be null");
+        Objects.requireNonNull(value, "Token value string cannot be null");
         int cost = Integer.parseInt(value.trim());
         if (cost > 0) {
             price.put(token, cost);

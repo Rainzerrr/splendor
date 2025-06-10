@@ -39,7 +39,8 @@ public final class SimplifiedGame implements Game {
                     IntStream.range(0, 8).forEach(i -> {
                         EnumMap<GemToken, Integer> cost = new EnumMap<>(GemToken.class);
                         cost.put(color, 3);
-                        cardDecks.add(new DevelopmentCard(cost, color, 1, 1, "../resources/cards/" + color.toString().toLowerCase() + "_mine.png"));
+                        System.out.println("../resources/images/" + color.toString().toLowerCase() + "_mine.png");
+                        cardDecks.add(new DevelopmentCard(cost, color, 1, 1, "../resources/images/development_cards/" + color.toString().toLowerCase() + "_mine.png"));
                     });
                 });
 
@@ -52,6 +53,7 @@ public final class SimplifiedGame implements Game {
      * @param name The name of the player to be added.
      */
     public void addPlayer(String name) {
+        Objects.requireNonNull(name, "Player name cannot be null");
         players.add(new Player(name));
     }
 
@@ -61,16 +63,17 @@ public final class SimplifiedGame implements Game {
      * @param card The card to be replaced.
      */
     public void replaceCard(DevelopmentCard card) {
-        displayedCards.remove(card);
-        if (!cardDecks.isEmpty()) {
+        Objects.requireNonNull(card, "Card cannot be null");
+
+        if (displayedCards.remove(card) && !cardDecks.isEmpty()) {
             displayedCards.add(cardDecks.removeFirst());
         }
     }
-    @Override
-    public List<Integer> getAmountsOfCardByLevel(){
-        return List.of(cardDecks.size());
-    };
 
+    @Override
+    public List<Integer> getAmountsOfCardByLevel() {
+        return List.of(cardDecks.size());
+    }
 
     /**
      * Returns an unmodifiable list of currently displayed development cards.
@@ -90,6 +93,7 @@ public final class SimplifiedGame implements Game {
      */
     @Override
     public GemStock getBank() {
+        Objects.requireNonNull(bank, "Bank cannot be null");
         return bank;
     }
 
@@ -100,8 +104,8 @@ public final class SimplifiedGame implements Game {
      * @param p The player who wishes to purchase the card.
      * @return Whether the card could be purchased.
      */
-
     public boolean buyCard(Player p) {
+        Objects.requireNonNull(p, "Player cannot be null");
         return false;
     }
 
@@ -120,7 +124,10 @@ public final class SimplifiedGame implements Game {
      * @param amount The amount of the gem token to remove.
      */
     public void removeTokenFromBank(GemToken gem, int amount) {
-        Objects.requireNonNull(gem);
+        Objects.requireNonNull(gem, "Gem token cannot be null");
+        if (amount < 0) {
+            throw new IllegalArgumentException("Amount to remove must not be negative");
+        }
         bank.remove(gem, amount);
     }
 }

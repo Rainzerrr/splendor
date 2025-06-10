@@ -11,7 +11,7 @@ import java.util.stream.IntStream;
 
 public final class TerminalView implements SplendorView {
     private final ConsoleInput input = new ConsoleInput();
-// TODO add game as attribute to avoid function parameters
+
     /**
      * Displays a message to the user.
      *
@@ -76,6 +76,7 @@ public final class TerminalView implements SplendorView {
      * @param nobles the nobles of the game.
      */
     public void showNobles(List<Noble> nobles) {
+        Objects.requireNonNull(nobles);
         System.out.println("[NOBLES DE LA PARTIE]");
         nobles.forEach(System.out::println);
         System.out.println();
@@ -87,8 +88,9 @@ public final class TerminalView implements SplendorView {
      *
      * @param player the player whose turn it is
      */
-    public void showPlayerTurn(Player player) {
-        Objects.requireNonNull(player);
+    public void showPlayerTurn(Player player, Game game) {
+        Objects.requireNonNull(player, "Player cannot be null");
+        Objects.requireNonNull(game, "Game cannot be null");
         System.out.println(player.getName() + "\n");
     }
 
@@ -98,8 +100,9 @@ public final class TerminalView implements SplendorView {
      * @param game The type of game.
      */
     public void showMenu(Game game) {
+        Objects.requireNonNull(game, "Game cannot be null");
         displayMessage("[ACTIONS DISPONIBLES]");
-        switch(game) {
+        switch (game) {
             case CompleteGame c -> displayMessage(
                     "Actions : 1. Acheter | 2. 2 gemmes identiques | 3. 3 gemmes différentes | 4. Réserver | 5. Acheter carte réservée\n" +
                             "Affichage : 6. Nobles | 7. Cartes sur le plateau | 8. Contenu de la banque | 9. Cartes achetées "
@@ -111,8 +114,6 @@ public final class TerminalView implements SplendorView {
         }
     }
 
-
-
     /**
      * Displays the state of the board to the user. This includes the gemstones
      * available in the bank, the development cards on the board, and the
@@ -121,6 +122,7 @@ public final class TerminalView implements SplendorView {
      * @param game the game to display the board for
      */
     public void showBoard(Game game) {
+        Objects.requireNonNull(game, "Game cannot be null");
         var nobles = game.getNobles();
         showBank(game.getBank());
         showCards(game);
@@ -136,9 +138,10 @@ public final class TerminalView implements SplendorView {
      * @return the choice of the user, as an integer. The value will be between
      */
     public int getMenuChoice(Game game) {
-        return switch (game){
+        Objects.requireNonNull(game, "Game cannot be null");
+        return switch (game) {
             case SimplifiedGame s -> input.askInt("Votre choix : ", 1, 5);
-            case CompleteGame s -> input.askInt("Votre choix : ", 1, 9);
+            case CompleteGame c -> input.askInt("Votre choix : ", 1, 9);
         };
     }
 
@@ -151,6 +154,9 @@ public final class TerminalView implements SplendorView {
      *         chosen.
      */
     public int selectCard(int maxIndex, boolean isReserved) {
+        if (maxIndex < 0) {
+            throw new IllegalArgumentException("maxIndex must not be negative");
+        }
         return input.askInt("Sélectionnez une carte (1-" + maxIndex + ", 0 pour annuler) : ", 0, maxIndex) - 1;
     }
 
@@ -163,6 +169,9 @@ public final class TerminalView implements SplendorView {
      *         chosen.
      */
     public int selectToken(int maxIndex) {
+        if (maxIndex < 0) {
+            throw new IllegalArgumentException("maxIndex must not be negative");
+        }
         return input.askInt("Votre choix (1-5, 0 pour revenir au menu) : ", 0, maxIndex) - 1;
     }
 
@@ -181,7 +190,10 @@ public final class TerminalView implements SplendorView {
      * @param amount the number of tokens that have been taken
      */
     public void showTokensTaken(GemToken token, int amount) {
-        Objects.requireNonNull(token);
+        Objects.requireNonNull(token, "GemToken cannot be null");
+        if (amount < 0) {
+            throw new IllegalArgumentException("Amount of tokens taken must not be negative");
+        }
         System.out.println(amount + " jeton(s) " + token + " ajouté(s) !\n");
     }
 
@@ -193,7 +205,7 @@ public final class TerminalView implements SplendorView {
      * @param players the list of players to rank
      */
     public void showFinalRanking(List<Player> players) {
-        Objects.requireNonNull(players);
+        Objects.requireNonNull(players, "Players list cannot be null");
         displayMessage("Nous avons un vainqueur !");
         displayMessage("[CLASSEMENT FINAL]");
 
@@ -222,6 +234,7 @@ public final class TerminalView implements SplendorView {
      * @param token the type of token that is no longer available
      */
     public void showNoMoreTokens(GemToken token) {
+        Objects.requireNonNull(token);
         System.out.println("Plus de jetons disponibles pour : " + token);
     }
 
@@ -231,10 +244,15 @@ public final class TerminalView implements SplendorView {
      * @param remaining the number of tokens the user still has to choose
      */
     public void showRemainingChoices(int remaining) {
+        if (remaining < 0) {
+            throw new IllegalArgumentException("Couldn't be negative");
+        }
         System.out.println("Nombre de gemmes restantes à choisir : " + remaining);
     }
 
     public GemToken askGemToDiscard(Player player) {
+        Objects.requireNonNull(player, "Player cannot be null");
+
         List<GemToken> types = Arrays.stream(GemToken.values())
                 .filter(t -> player.getTokenCount(t) > 0)
                 .toList();
@@ -247,9 +265,8 @@ public final class TerminalView implements SplendorView {
                     t,
                     player.getTokenCount(t));
         }
-        var choix = input.askInt("Votre choix (1–" + types.size() + ") : ",
-                1,
-                types.size());
+
+        var choix = input.askInt("Votre choix (1–" + types.size() + ") : ", 1, types.size());
         return types.get(choix - 1);
     }
 }

@@ -15,11 +15,17 @@ public class PlayerView {
     private final ConsoleInput input = new ConsoleInput();
 
     public void showWallet(Player player) {
-        Objects.requireNonNull(player);
+        Objects.requireNonNull(player, "Player cannot be null");
         System.out.println(player);
     }
 
     public void showMissingGems(Map<GemToken, Integer> missingGems, int totalGoldNeeded) {
+        Objects.requireNonNull(missingGems, "Missing gems map cannot be null");
+
+        if (totalGoldNeeded < 0) {
+            throw new IllegalArgumentException("Total gold needed must not be negative");
+        }
+
         System.out.println("Détail des jetons manquants:");
         missingGems.forEach((gem, missing) ->
                 System.out.printf("  - %d %s%n", missing, gem));
@@ -28,6 +34,12 @@ public class PlayerView {
     }
 
     public Map<GemToken, Integer> askGoldReplacements(Map<GemToken, Integer> missingGems, int goldAvailable) {
+        Objects.requireNonNull(missingGems, "Missing gems map cannot be null");
+
+        if (goldAvailable < 0) {
+            throw new IllegalArgumentException("Gold available must not be negative");
+        }
+
         Map<GemToken, Integer> replacements = new EnumMap<>(GemToken.class);
         var remainingGold = goldAvailable;
 
@@ -61,17 +73,17 @@ public class PlayerView {
 
     /* ---- Display messages ---- */
     public void showPlayerInfo(Player p) {
-        Objects.requireNonNull(p);
+        Objects.requireNonNull(p, "Player cannot be null");
         System.out.println(p);
     }
 
     public void showPurchaseSuccess(DevelopmentCard card) {
-        Objects.requireNonNull(card);
+        Objects.requireNonNull(card, "Development card cannot be null");
         System.out.println("Carte achetée : " + card + "\n");
     }
 
     public void showReservationSuccess(DevelopmentCard card) {
-        Objects.requireNonNull(card);
+        Objects.requireNonNull(card, "Development card cannot be null");
         System.out.printf("Réservation réussie : %s\n", card);
     }
 
@@ -89,19 +101,19 @@ public class PlayerView {
 
     public void showGoldUsed(int amount) {
         if (amount < 0) {
-            return;
+            throw new IllegalArgumentException("Amount of gold used must not be negative");
         }
         System.out.printf("%d jeton(s) or utilisé(s).%n", amount);
     }
 
     public void showPurchasedCards(Player player) {
-        Objects.requireNonNull(player);
+        Objects.requireNonNull(player, "Player cannot be null");
         System.out.println("Cartes achetées :");
         player.getPurchasedCards().forEach(System.out::println);
     }
 
     public void showReservedCards(Player player) {
-        Objects.requireNonNull(player);
+        Objects.requireNonNull(player, "Player cannot be null");
         System.out.println("Cartes réservées :");
         player.getReservedCards().forEach(System.out::println);
     }

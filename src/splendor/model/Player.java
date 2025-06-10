@@ -300,6 +300,7 @@ public class Player {
     }
 
     public void removeReservedCard(DevelopmentCard card) {
+        Objects.requireNonNull(card, "Card cannot be null");
         reservedCards.remove(card);
     }
 }

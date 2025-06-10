@@ -31,7 +31,6 @@ public class Main {
 
         if (choiceGameMode == 1) {
             controller = createSimplifiedGame(input, gameView);
-            // Lancement de l'interface graphique pour le mode simplifié
             switch(gameView){
                 case TerminalView t -> {}
                 case GraphicView g -> g.run();
@@ -40,13 +39,11 @@ public class Main {
             controller.launchGame();
         } else {
             controller = createCompleteGame(input, gameView);
-            // Lancement de l'interface graphique pour le mode complet
             switch(gameView){
                 case TerminalView t -> {}
                 case GraphicView g -> g.run();
             }
             controller.launchGame();
-
         }
     }
 
