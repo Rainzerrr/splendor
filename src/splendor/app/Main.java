@@ -17,7 +17,6 @@ public class Main {
 
         boolean useText = true;
 
-        // Traitement des arguments en ligne de commande
         for (String arg : args) {
             if (arg.equals("--text")) {
                 useText = true;

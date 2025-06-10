@@ -263,7 +263,7 @@ public final class GraphicView implements SplendorView {
         switch (game) {
             case SimplifiedGame s -> {
                 GemToken[] allTokens = GemToken.values();
-                tokens = Arrays.copyOf(allTokens, allTokens.length - 1); // tout sauf la dernière
+                tokens = Arrays.copyOf(allTokens, allTokens.length - 1);
             }
             case CompleteGame cg -> tokens = GemToken.values();
         }
