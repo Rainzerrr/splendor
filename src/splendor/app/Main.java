@@ -15,12 +15,13 @@ public class Main {
         var input = new ConsoleInput();
         var view = new TerminalView();
 
-        boolean useText = true;
-
+        boolean useText = false;
+        boolean useBase = false;
         for (String arg : args) {
-            if (arg.equals("--text")) {
-                useText = true;
-                break;
+            switch (arg) {
+                case "--text" -> useText = true;
+                case "--base" -> useBase = true;
+                default -> throw new IllegalArgumentException("Argument non supporté : " + arg);
             }
         }
 
@@ -30,7 +31,7 @@ public class Main {
         var choiceGameMode = input.askInt("Votre choix (1-2) : ", 1, 2);
         GameController controller;
 
-        SplendorView gameView = useText ? view : new GraphicView() ;
+        SplendorView gameView = useText ? view : new GraphicView();
 
         if (choiceGameMode == 1) {
             controller = createSimplifiedGame(input, gameView);
