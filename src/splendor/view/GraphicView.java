@@ -125,8 +125,6 @@ public final class GraphicView implements SplendorsView{
 
     // Méthode appelée à chaque frame
     private void draw(Graphics2D g) {
-        int width = context.getScreenInfo().width();
-
         try {
             drawBackground(g);
             drawHeader(g, "Au tour d'alice");
@@ -174,12 +172,9 @@ public final class GraphicView implements SplendorsView{
             BufferedImage tokenImage = ImageIO.read(inputStream);
             int scaledSize = resolutionManager.scaleSize(70);
 
-            int scaledX = resolutionManager.scaleX(x);
-            int scaledY = resolutionManager.scaleY(y);
+            g.drawImage(tokenImage, x, y, scaledSize, scaledSize, null);
 
-            g.drawImage(tokenImage, scaledX, scaledY, scaledSize, scaledSize, null);
-
-            drawTokenImageAmount(g, scaledX, scaledY, count);
+            drawTokenImageAmount(g, x, y, count);
 
         } catch (IOException e) {
             e.printStackTrace();
@@ -187,33 +182,25 @@ public final class GraphicView implements SplendorsView{
     }
 
     private void drawFramedPanel(Graphics2D g, int x, int y, int width, int height) {
-        int scaledX = resolutionManager.scaleX(x);
-        int scaledY = resolutionManager.scaleY(y);
-        int scaledWidth = resolutionManager.scaleX(width);
-        int scaledHeight = resolutionManager.scaleY(height);
         int scaledCornerRadius = resolutionManager.scaleSize(CORNER_RADIUS);
         int scaledBorder = resolutionManager.scaleSize(2);
 
         g.setColor(PANEL_BACKGROUND);
-        g.fillRoundRect(scaledX, scaledY, scaledWidth, scaledHeight, scaledCornerRadius, scaledCornerRadius);
+        g.fillRoundRect(x, y, width, height, scaledCornerRadius, scaledCornerRadius);
 
         g.setColor(PANEL_BORDER);
         g.setStroke(new BasicStroke(scaledBorder));
-        g.drawRoundRect(scaledX, scaledY, scaledWidth, scaledHeight, scaledCornerRadius, scaledCornerRadius);
+        g.drawRoundRect(x, y, width, height, scaledCornerRadius, scaledCornerRadius);
     }
 
     private void drawBubble(Graphics2D g, String text, int x, int y, int width, int height) {
-        int scaledX = resolutionManager.scaleX(x);
-        int scaledY = resolutionManager.scaleY(y);
-        int scaledWidth = resolutionManager.scaleX(width);
-        int scaledHeight = resolutionManager.scaleY(height);
         int scaledBubbleRadius = resolutionManager.scaleSize(15);
 
         g.setColor(BUBBLE_BACKGROUND);
-        g.fillRoundRect(scaledX, scaledY, scaledWidth, scaledHeight, scaledBubbleRadius, scaledBubbleRadius);
+        g.fillRoundRect(x, y, width, height, scaledBubbleRadius, scaledBubbleRadius);
 
         g.setColor(BUBBLE_BORDER);
-        g.drawRoundRect(scaledX, scaledY, scaledWidth, scaledHeight, scaledBubbleRadius, scaledBubbleRadius);
+        g.drawRoundRect(x, y, width, height, scaledBubbleRadius, scaledBubbleRadius);
 
         Font scaledFont = resolutionManager.scaleFont(BUBBLE_FONT);
         g.setFont(scaledFont);
@@ -222,8 +209,8 @@ public final class GraphicView implements SplendorsView{
         int textWidth = fm.stringWidth(text);
         int textVerticalAdjustment = resolutionManager.scaleSize(2);
 
-        int textX = scaledX + (scaledWidth - textWidth) / 2;
-        int textY = scaledY + (scaledHeight + fm.getAscent()) / 2 - textVerticalAdjustment;
+        int textX = x + (width - textWidth) / 2;
+        int textY = y + (height + fm.getAscent()) / 2 - textVerticalAdjustment;
 
         g.setColor(BUBBLE_TEXT_COLOR);
         g.drawString(text, textX, textY);
@@ -233,14 +220,12 @@ public final class GraphicView implements SplendorsView{
         int tokenWidth = resolutionManager.scaleSize(100);
         int tokenHeight = resolutionManager.scaleSize(50);
         int tokenSpacing = resolutionManager.scaleSize(10);
-        int startX = resolutionManager.scaleX(x + PADDING);
-        int startY = resolutionManager.scaleY(y + PADDING + 10);
-
+        int startY = y + resolutionManager.scaleY(PADDING + 10);
         GemToken[] tokens = GemToken.values();
 
         for (int i = 0; i < tokens.length; i++) {
             GemToken token = tokens[i];
-            int tokenX = startX + i * (tokenWidth + tokenSpacing);
+            int tokenX = x + i * (tokenWidth + tokenSpacing);
 
             Color tokenColor = TOKEN_COLORS.getOrDefault(token, Color.GRAY);
             g.setColor(tokenColor);
@@ -277,32 +262,29 @@ public final class GraphicView implements SplendorsView{
         int rectHeight = resolutionManager.scaleSize(90);
         int x = resolutionManager.scaleX(500);
         int y = resolutionManager.scaleY(720);
-        int scaledWidth = resolutionManager.scaleX(width);
         int PADDING = resolutionManager.scaleSize(15);
 
-        drawFramedPanel(g, x, y, scaledWidth, rectHeight);
+        drawFramedPanel(g, x, y, width, rectHeight);
 
         int titleBubbleWidth = resolutionManager.scaleSize(180);
         int titleBubbleHeight = resolutionManager.scaleSize(30);
-        int titleBubbleX = x + (scaledWidth - titleBubbleWidth) / 2;
+        int titleBubbleX = x + (width - titleBubbleWidth) / 2;
         int titleBubbleY = y - resolutionManager.scaleSize(15);
         drawBubble(g, "Pierres précieuses", titleBubbleX, titleBubbleY, titleBubbleWidth, titleBubbleHeight);
 
         int totalGems = p.getTotalAmount();
         String counterText = totalGems + "/10";
         int counterBubbleWidth = resolutionManager.scaleSize(50);
-        int counterBubbleX = x + scaledWidth - counterBubbleWidth - PADDING;
+        int counterBubbleX = x + width - counterBubbleWidth - PADDING;
         int counterBubbleY = y - resolutionManager.scaleSize(15);
         drawBubble(g, counterText, counterBubbleX, counterBubbleY, counterBubbleWidth, titleBubbleHeight);
 
-        drawGemStones(g, p, resolutionManager.scaleX(x), resolutionManager.scaleY(y));
+        drawGemStones(g, p, x + PADDING, y);
     }
 
 
 
     private void drawCardStacks(Graphics2D g, int x, int yStart, List<Integer> stackSizes) {
-        int scaledX = resolutionManager.scaleX(x);
-        int scaledYStart = resolutionManager.scaleY(yStart);
         int scaledCardWidth = resolutionManager.scaleSize(CARD_WIDTH);
         int scaledCardHeight = resolutionManager.scaleSize(CARD_HEIGHT);
         int scaledPadding = resolutionManager.scaleSize(PADDING);
@@ -314,11 +296,11 @@ public final class GraphicView implements SplendorsView{
             try (InputStream in = Main.class.getResourceAsStream(imagePath)) {
                 if (in != null) {
                     BufferedImage backImage = ImageIO.read(in);
-                    int y = scaledYStart + (3 - level) * (scaledCardHeight + scaledPadding);
-                    g.drawImage(backImage, scaledX, y, scaledCardWidth, scaledCardHeight, null);
+                    int y = yStart + (3 - level) * (scaledCardHeight + scaledPadding);
+                    g.drawImage(backImage, x, y, scaledCardWidth, scaledCardHeight, null);
 
                     int count = stackSizes.get(3 - level);
-                    int circleX = scaledX + circlePadding;
+                    int circleX = x + circlePadding;
                     int circleY = y + circlePadding;
 
                     g.setColor(Color.WHITE);
@@ -407,27 +389,21 @@ public final class GraphicView implements SplendorsView{
 
 
     private void drawCardToken(Graphics2D g, GemToken bonus, int amount, int cx, int cy, int size) {
-        int scaledX = resolutionManager.scaleX(cx);
-        int scaledY = resolutionManager.scaleY(cy);
-        int scaledSize = resolutionManager.scaleSize(size);
-
         g.setColor(TOKEN_COLORS.get(bonus));
-        g.fillOval(scaledX, scaledY, scaledSize, scaledSize);
+        g.fillOval(cx, cy, size, size);
 
-        drawNumber(g, CARD_TOKEN_AMOUNT_FONT, amount, scaledX, scaledY, scaledSize, scaledSize);
+        drawNumber(g, CARD_TOKEN_AMOUNT_FONT, amount, cx, cy, size, size);
     }
 
 
     private void drawNobleToken(Graphics2D g, GemToken bonus, int amount, int cx, int cy) {
-        int scaledX = resolutionManager.scaleX(cx);
-        int scaledY = resolutionManager.scaleY(cy);
         int scaledWidth = resolutionManager.scaleSize(CARD_WIDTH / 7);
         int scaledHeight = resolutionManager.scaleSize(CARD_HEIGHT / 6);
 
         g.setColor(TOKEN_COLORS.get(bonus));
-        g.fillRect(scaledX, scaledY, scaledWidth, scaledHeight);
+        g.fillRect(cx, cy, scaledWidth, scaledHeight);
 
-        drawNumber(g, NOBLE_TOKEN_AMOUNT_FONT, amount, scaledX, scaledY, scaledWidth, scaledHeight);
+        drawNumber(g, NOBLE_TOKEN_AMOUNT_FONT, amount, cx, cy, scaledWidth, scaledHeight);
     }
 
 
@@ -540,7 +516,6 @@ public final class GraphicView implements SplendorsView{
         int nobleWidth = resolutionManager.scaleX(NOBLE_WIDTH);
         int nobleHeight = resolutionManager.scaleY(NOBLE_HEIGHT);
         int padding = resolutionManager.scaleSize(PADDING);
-
         int startX = width - playerFrameWidth - resolutionManager.scaleX(200);
         int startY = resolutionManager.scaleY(100);
 
@@ -623,32 +598,31 @@ public final class GraphicView implements SplendorsView{
     private void drawPlayerBox(Graphics2D g, int x, int yStart) {
         g.setColor(PANEL_BACKGROUND);
         g.fillRoundRect(
-                resolutionManager.scaleX(x + 5),
-                resolutionManager.scaleY(yStart + 10),
+                x + resolutionManager.scaleX( 5),
+                yStart + resolutionManager.scaleY(10),
                 resolutionManager.scaleX(PLAYER_FRAME_WIDTH - 10),
                 resolutionManager.scaleY(PLAYER_FRAME_HEIGHT),
-                resolutionManager.scaleSize(50),
-                resolutionManager.scaleSize(50)
+                resolutionManager.scaleSize(20),
+                resolutionManager.scaleSize(20)
         );
     }
 
     private void drawPlayerHeader(Graphics2D g, Player player, int x, int yStart) {
         g.setColor(Color.WHITE);
         g.setFont(resolutionManager.scaleFont(PLAYER_NAME_FONT));
-        g.drawString(player.getName(), resolutionManager.scaleX(x + 20), resolutionManager.scaleY(yStart + 40));
+        g.drawString(player.getName(), x + resolutionManager.scaleX(20), yStart + resolutionManager.scaleY( 40));
 
         g.setColor(Color.YELLOW);
-        g.drawString("★ " + player.getPrestigeScore(), resolutionManager.scaleX(x + 240), resolutionManager.scaleY(yStart + 40));
+        g.drawString("★ " + player.getPrestigeScore(), x + resolutionManager.scaleX( 240), yStart + resolutionManager.scaleY( 40));
     }
 
     private void drawPlayerTokens(Graphics2D g, Player player, int x, int y) {
         g.setColor(Color.WHITE);
         Font scaledTitleFont = resolutionManager.scaleFont(PLAYER_INFOS_TITLE_FONT);
         g.setFont(scaledTitleFont);
-        g.drawString("Jetons", resolutionManager.scaleX(x), resolutionManager.scaleY(y));
+        g.drawString("Jetons", x, y);
 
-        int tokenX = resolutionManager.scaleX(x);
-        int tokenY = resolutionManager.scaleY(y + 20);
+        int tokenY = y + resolutionManager.scaleY(20);
         int tokenWidth = resolutionManager.scaleX(30);
         int tokenHeight = resolutionManager.scaleY(40);
         int tokenSpacing = resolutionManager.scaleX(40);
@@ -656,16 +630,16 @@ public final class GraphicView implements SplendorsView{
 
         for (Map.Entry<GemToken, Integer> entry : player.getWallet().entries()) {
             g.setColor(TOKEN_COLORS.get(entry.getKey()));
-            g.fillRoundRect(tokenX, tokenY, tokenWidth, tokenHeight, cornerRadius, cornerRadius);
+            g.fillRoundRect(x, tokenY, tokenWidth, tokenHeight, cornerRadius, cornerRadius);
 
             g.setColor(Color.WHITE);
             Font scaledValueFont = resolutionManager.scaleFont(PLAYER_INFOS_TITLE_FONT);
             g.setFont(scaledValueFont);
             int textOffsetX = resolutionManager.scaleX(10);
             int textOffsetY = resolutionManager.scaleY(28);
-            g.drawString(String.valueOf(entry.getValue()), tokenX + textOffsetX, tokenY + textOffsetY);
+            g.drawString(String.valueOf(entry.getValue()), x + textOffsetX, tokenY + textOffsetY);
 
-            tokenX += tokenSpacing;
+            x += tokenSpacing;
         }
     }
 
@@ -673,7 +647,7 @@ public final class GraphicView implements SplendorsView{
         g.setColor(Color.WHITE);
         Font scaledTitleFont = resolutionManager.scaleFont(PLAYER_INFOS_TITLE_FONT);
         g.setFont(scaledTitleFont);
-        g.drawString("Bonus", resolutionManager.scaleX(x), resolutionManager.scaleY(y));
+        g.drawString("Bonus", x, y);
 
         EnumMap<GemToken, Integer> bonusCounts = new EnumMap<>(GemToken.class);
         for (DevelopmentCard card : player.getPurchasedCards()) {
@@ -681,8 +655,7 @@ public final class GraphicView implements SplendorsView{
             bonusCounts.put(bonus, bonusCounts.getOrDefault(bonus, 0) + 1);
         }
 
-        int bonusX = resolutionManager.scaleX(x);
-        int bonusY = resolutionManager.scaleY(y + 10);
+        int bonusY = y + resolutionManager.scaleY(10);
         int bonusWidth = resolutionManager.scaleX(30);
         int bonusHeight = resolutionManager.scaleY(40);
         int bonusSpacing = resolutionManager.scaleX(40);
@@ -691,34 +664,32 @@ public final class GraphicView implements SplendorsView{
         for (Map.Entry<GemToken, Integer> entry : bonusCounts.entrySet()) {
             if (entry.getValue() > 0) {
                 g.setColor(TOKEN_COLORS.get(entry.getKey()));
-                g.fillRoundRect(bonusX, bonusY + resolutionManager.scaleY(10), bonusWidth, bonusHeight, cornerRadius, cornerRadius);
+                g.fillRoundRect(x, bonusY + resolutionManager.scaleY(10), bonusWidth, bonusHeight, cornerRadius, cornerRadius);
 
                 g.setColor(Color.WHITE);
                 Font scaledBonusFont = resolutionManager.scaleFont(PLAYER_INFOS_BONUS_FONT);
                 g.setFont(scaledBonusFont);
                 int textOffsetX = resolutionManager.scaleX(10);
                 int textOffsetY = resolutionManager.scaleY(38);
-                g.drawString(String.valueOf(entry.getValue()), bonusX + textOffsetX, bonusY + textOffsetY);
+                g.drawString(String.valueOf(entry.getValue()), x + textOffsetX, bonusY + textOffsetY);
 
-                bonusX += bonusSpacing;
+                x += bonusSpacing;
             }
         }
     }
 
     private void drawPlayerInfo(Graphics2D g, Player player, int x, int yIndex) {
         int yStart = resolutionManager.scaleY(yIndex * PLAYER_FRAME_HEIGHT + 20 * yIndex);
-        int scaledX = resolutionManager.scaleX(x);
-
-        drawPlayerBox(g, scaledX, yStart);
-        drawPlayerHeader(g, player, scaledX, yStart);
-        drawPlayerTokens(g, player, scaledX + resolutionManager.scaleX(20), yStart + resolutionManager.scaleY(80));
-        drawPlayerBonuses(g, player, scaledX + resolutionManager.scaleX(20), yStart + resolutionManager.scaleY(180));
+        drawPlayerBox(g, x, yStart);
+        drawPlayerHeader(g, player, x, yStart);
+        drawPlayerTokens(g, player, x + resolutionManager.scaleX(20), yStart + resolutionManager.scaleY(80));
+        drawPlayerBonuses(g, player, x + resolutionManager.scaleX(20), yStart + resolutionManager.scaleY(180));
     }
 
     private void drawReservedCards(Graphics2D g, List<DevelopmentCard> cards, int width) {
         int x = resolutionManager.scaleX(370);
         int y = resolutionManager.scaleY(850);
-        int rectWidth = resolutionManager.scaleX(width / 2 + 100);
+        int rectWidth = width / 2 + resolutionManager.scaleX(100);
         int rectHeight = resolutionManager.scaleY(200);
 
         drawFramedPanel(g, x, y, rectWidth, rectHeight);
@@ -762,9 +733,9 @@ public final class GraphicView implements SplendorsView{
     }
 
     private void drawPlayerNobles(Graphics2D g, List<Noble> nobles, int width) {
-        int x = resolutionManager.scaleX(370 + width / 2 + 120);
+        int x = width / 2 + resolutionManager.scaleX(370 + 120);
         int y = resolutionManager.scaleY(850);
-        int rectWidth = resolutionManager.scaleX(width / 2 + 100);
+        int rectWidth = width / 2 + resolutionManager.scaleX(100);
         int rectHeight = resolutionManager.scaleY(200);
 
         drawFramedPanel(g, x, y, rectWidth, rectHeight);
@@ -831,7 +802,7 @@ public final class GraphicView implements SplendorsView{
         int scaledPlayerFrameWidth = resolutionManager.scaleX(PLAYER_FRAME_WIDTH);
 
         context.renderFrame(g -> {
-            drawPlayerGemStones(g, player, (resolutionManager.scaleX(width) - scaledPlayerFrameWidth) / 2 - resolutionManager.scaleX(100));
+            drawPlayerGemStones(g, player, (width - scaledPlayerFrameWidth) / 2 - resolutionManager.scaleX(100));
             drawReservedCards(g, player.getReservedCards(), (width - scaledPlayerFrameWidth) / 2);
             drawPlayerNobles(g, player.getAcquiredNobles(), (width - scaledPlayerFrameWidth) / 2);
         });
@@ -887,8 +858,7 @@ public final class GraphicView implements SplendorsView{
     @Override
     public void showBoard(Game game) {
         int width = context.getScreenInfo().width();
-        int scaledPlayerFrameWidth = resolutionManager.scaleX(PLAYER_FRAME_WIDTH);
-        int tokenBaseX = resolutionManager.scaleX(width - PLAYER_FRAME_WIDTH - 400);
+        int tokenBaseX = width - resolutionManager.scaleX(PLAYER_FRAME_WIDTH + 400);
 
         context.renderFrame(g -> {
             drawTokenImage(g, tokenBaseX, resolutionManager.scaleY(100), "../resources/images/tokens/diamond_token.png", game.getBank().getAmount(GemToken.DIAMOND));
@@ -902,11 +872,11 @@ public final class GraphicView implements SplendorsView{
 
             int[] index = {0};
             game.getPlayers().forEach(player -> {
-                drawPlayerInfo(g, player, resolutionManager.scaleX(width - PLAYER_FRAME_WIDTH), index[0]);
+                drawPlayerInfo(g, player, width - resolutionManager.scaleSize(PLAYER_FRAME_WIDTH), index[0]);
                 index[0]++;
             });
 
-            drawGameNobles(g, game.getNobles(), resolutionManager.scaleX(width));
+            drawGameNobles(g, game.getNobles(), width);
         });
     }
 
