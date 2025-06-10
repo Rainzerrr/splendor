@@ -5,7 +5,7 @@ import java.util.stream.IntStream;
 
 public final class SimplifiedGame implements Game {
     private final List<Player> players = new ArrayList<>();
-    private final GemStock bank = new GemStock(7, 7);
+    private final GemStock bank = new GemStock(7, 0);
     private final List<DevelopmentCard> cardDecks = new ArrayList<>();
     private final List<DevelopmentCard> displayedCards = new ArrayList<>();
 

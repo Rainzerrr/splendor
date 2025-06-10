@@ -75,17 +75,6 @@ public class GemStock {
     }
 
     /**
-     * Decrements the number of gems of the specified type by one.
-     *
-     * @param type the type of gem token to decrement
-     * @throws NullPointerException if the type is null
-     */
-    public void discardGem(GemToken type) {
-        Objects.requireNonNull(type, "GemToken cannot be null");
-        gems.computeIfPresent(type, (k, v) -> v - 1);
-    }
-
-    /**
      * Returns a string representation of the object. In the format of
      * "RED(1), GREEN(2), BLUE(3), WHITE(4), GOLD(5)".
      *

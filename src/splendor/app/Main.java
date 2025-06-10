@@ -15,7 +15,7 @@ public class Main {
         var input = new ConsoleInput();
         var view = new TerminalView();
 
-        boolean useText = false;
+        boolean useText = true;
 
         // Traitement des arguments en ligne de commande
         for (String arg : args) {

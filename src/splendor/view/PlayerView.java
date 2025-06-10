@@ -17,6 +17,7 @@ public class PlayerView {
     public void showWallet(Player player) {
         Objects.requireNonNull(player, "Player cannot be null");
         System.out.println(player);
+        System.out.println("coucou");
     }
 
     public void showMissingGems(Map<GemToken, Integer> missingGems, int totalGoldNeeded) {
