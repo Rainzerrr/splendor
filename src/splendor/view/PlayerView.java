@@ -71,12 +71,6 @@ public class PlayerView {
         return replacements;
     }
 
-    /* ---- Display messages ---- */
-    public void showPlayerInfo(Player p) {
-        Objects.requireNonNull(p, "Player cannot be null");
-        System.out.println(p);
-    }
-
     public void showPurchaseSuccess(DevelopmentCard card) {
         Objects.requireNonNull(card, "Development card cannot be null");
         System.out.println("Carte achetée : " + card + "\n");

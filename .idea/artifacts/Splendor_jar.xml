@@ -1,0 +1,13 @@
+<component name="ArtifactManager">
+  <artifact type="jar" build-on-make="true" name="Splendor:jar">
+    <output-path>$PROJECT_DIR$/out/artifacts/Splendor_jar</output-path>
+    <root id="archive" name="Splendor.jar">
+      <element id="module-output" name="Splendor" />
+      <element id="library" level="project" name="zen-6.0-sources" />
+      <element id="library" level="project" name="zen-6.0-javadoc (2)" />
+      <element id="extracted-dir" path="$USER_HOME$/Downloads/zen-6.0.jar" path-in-jar="/" />
+      <element id="extracted-dir" path="$PROJECT_DIR$/lib/zen-6.0.jar" path-in-jar="/" />
+      <element id="library" level="project" name="zen-6.0-javadoc" />
+    </root>
+  </artifact>
+</component>

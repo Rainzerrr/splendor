@@ -14,12 +14,16 @@ public class Main {
     public static void main(String[] args) {
         var input = new ConsoleInput();
         var view = new TerminalView();
-        view.displayMessage("[MENU PRINCIPAL]");
 
-        view.displayMessage("1. Affichage dans la console");
-        view.displayMessage("2. Affichage graphique");
+        boolean useText = false;
 
-        var choiceDisplay = input.askInt("Votre choix (1-2) : ", 1, 2);
+        // Traitement des arguments en ligne de commande
+        for (String arg : args) {
+            if (arg.equals("--text")) {
+                useText = true;
+                break;
+            }
+        }
 
         view.displayMessage("1. Mode Simplifié (2 joueurs exactement)");
         view.displayMessage("2. Mode Complet (2 à 4 joueurs)");
@@ -27,7 +31,7 @@ public class Main {
         var choiceGameMode = input.askInt("Votre choix (1-2) : ", 1, 2);
         GameController controller;
 
-        SplendorView gameView = choiceDisplay == 1 ? view :  new GraphicView();
+        SplendorView gameView = useText ? view : new GraphicView() ;
 
         if (choiceGameMode == 1) {
             controller = createSimplifiedGame(input, gameView);

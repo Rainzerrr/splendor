@@ -96,7 +96,7 @@ public final class GraphicView implements SplendorView {
     private void drawBackground(Graphics2D g) throws IOException {
         Objects.requireNonNull(g, "g cannot be null");
 
-        InputStream inputStream = Main.class.getResourceAsStream("../resources/images/background.png");
+        InputStream inputStream = Main.class.getResourceAsStream("/splendor/resources/images/background.png");
         if (inputStream == null) {
             throw new IOException("Image not found in resources!");
         }
@@ -245,7 +245,7 @@ public final class GraphicView implements SplendorView {
         g.drawString(text, textX, textY);
     }
 
-    private void drawGemStones(Graphics2D g, Player p, int x, int y) {
+    private void drawGemStones(Graphics2D g, Game game, Player p, int x, int y) {
         Objects.requireNonNull(g, "Graphics2D (g) cannot be null");
         Objects.requireNonNull(p, "Player (p) cannot be null");
 
@@ -257,7 +257,16 @@ public final class GraphicView implements SplendorView {
         int tokenHeight = resolutionManager.scaleSize(50);
         int tokenSpacing = resolutionManager.scaleSize(10);
         int startY = y + resolutionManager.scaleY(PADDING + 10);
-        GemToken[] tokens = GemToken.values();
+
+        GemToken[] tokens;
+
+        switch (game) {
+            case SimplifiedGame s -> {
+                GemToken[] allTokens = GemToken.values();
+                tokens = Arrays.copyOf(allTokens, allTokens.length - 1); // tout sauf la dernière
+            }
+            case CompleteGame cg -> tokens = GemToken.values();
+        }
 
         for (int i = 0; i < tokens.length; i++) {
             GemToken token = tokens[i];
@@ -294,7 +303,8 @@ public final class GraphicView implements SplendorView {
         }
     }
 
-    private void drawPlayerGemStones(Graphics2D g, Player p, int width) {
+    private void drawPlayerGemStones(Graphics2D g, Game game, Player p, int width) {
+
         int rectHeight = resolutionManager.scaleSize(90);
         int x = resolutionManager.scaleX(500);
         int y = resolutionManager.scaleY(720);
@@ -315,7 +325,7 @@ public final class GraphicView implements SplendorView {
         int counterBubbleY = y - resolutionManager.scaleSize(15);
         drawBubble(g, counterText, counterBubbleX, counterBubbleY, counterBubbleWidth, titleBubbleHeight);
 
-        drawGemStones(g, p, x + PADDING, y);
+        drawGemStones(g, game, p,x + PADDING, y);
     }
 
 
@@ -328,7 +338,7 @@ public final class GraphicView implements SplendorView {
         int circlePadding = resolutionManager.scaleSize(8);
 
         for (int level = 3; level >= 1; level--) {
-            String imagePath = "../resources/images/development_cards/level" + level + "_cards.png";
+            String imagePath = "/splendor/resources/images/development_cards/level" + level + "_cards.png";
             try (InputStream in = Main.class.getResourceAsStream(imagePath)) {
                 if (in != null) {
                     BufferedImage backImage = ImageIO.read(in);
@@ -527,7 +537,7 @@ public final class GraphicView implements SplendorView {
     private void drawCardBonusIcon(Graphics2D g, int x, int y, DevelopmentCard card) {
         try {
             String bonusName = card.bonus().toString().toLowerCase();
-            InputStream in = Main.class.getResourceAsStream("../resources/images/gems/" + bonusName + ".png");
+            InputStream in = Main.class.getResourceAsStream("/splendor/resources/images/gems/" + bonusName + ".png");
             if (in != null) {
                 BufferedImage bonusImage = ImageIO.read(in);
                 int bonusSize = resolutionManager.scaleSize(30);
@@ -652,7 +662,7 @@ public final class GraphicView implements SplendorView {
         g.drawString("★ " + player.getPrestigeScore(), x + resolutionManager.scaleX( 240), yStart + resolutionManager.scaleY( 40));
     }
 
-    private void drawPlayerTokens(Graphics2D g, Player player, int x, int y) {
+    private void drawPlayerTokens(Graphics2D g, Game game, Player player, int x, int y) {
         g.setColor(Color.WHITE);
         Font scaledTitleFont = resolutionManager.scaleFont(PLAYER_INFOS_TITLE_FONT);
         g.setFont(scaledTitleFont);
@@ -664,7 +674,22 @@ public final class GraphicView implements SplendorView {
         int tokenSpacing = resolutionManager.scaleX(40);
         int cornerRadius = resolutionManager.scaleSize(10);
 
+        GemToken[] allowedTokens;
+        switch (game) {
+            case SimplifiedGame s -> {
+                GemToken[] allTokens = GemToken.values();
+                allowedTokens = Arrays.copyOf(allTokens, allTokens.length - 1);
+            }
+            case CompleteGame cg -> allowedTokens = GemToken.values();
+            default -> allowedTokens = new GemToken[0];
+        }
+        Set<GemToken> allowedSet = Set.of(allowedTokens);
+
         for (Map.Entry<GemToken, Integer> entry : player.getWallet().entries()) {
+            if (!allowedSet.contains(entry.getKey())) {
+                continue;
+            }
+
             g.setColor(TOKEN_COLORS.get(entry.getKey()));
             g.fillRoundRect(x, tokenY, tokenWidth, tokenHeight, cornerRadius, cornerRadius);
 
@@ -679,7 +704,7 @@ public final class GraphicView implements SplendorView {
         }
     }
 
-    private void drawPlayerBonuses(Graphics2D g, Player player, int x, int y) {
+    private void drawPlayerBonuses(Graphics2D g, Game game, Player player, int x, int y) {
         g.setColor(Color.WHITE);
         Font scaledTitleFont = resolutionManager.scaleFont(PLAYER_INFOS_TITLE_FONT);
         g.setFont(scaledTitleFont);
@@ -714,13 +739,13 @@ public final class GraphicView implements SplendorView {
         }
     }
 
-    private void drawPlayerInfo(Graphics2D g, Player player, int x, int yIndex) {
+    private void drawPlayerInfo(Graphics2D g, Game game, Player player, int x, int yIndex) {
 
         int yStart = resolutionManager.scaleY(yIndex * PLAYER_FRAME_HEIGHT + 20 * yIndex);
         drawPlayerBox(g, x, yStart);
         drawPlayerHeader(g, player, x, yStart);
-        drawPlayerTokens(g, player, x + resolutionManager.scaleX(20), yStart + resolutionManager.scaleY(80));
-        drawPlayerBonuses(g, player, x + resolutionManager.scaleX(20), yStart + resolutionManager.scaleY(180));
+        drawPlayerTokens(g, game, player, x + resolutionManager.scaleX(20), yStart + resolutionManager.scaleY(80));
+        drawPlayerBonuses(g, game, player, x + resolutionManager.scaleX(20), yStart + resolutionManager.scaleY(180));
     }
 
     private void drawReservedCards(Graphics2D g, List<DevelopmentCard> cards, int width) {
@@ -862,7 +887,7 @@ public final class GraphicView implements SplendorView {
             } catch (IOException e) {
                 e.printStackTrace();
             }
-            drawPlayerGemStones(g, player, (width - scaledPlayerFrameWidth) / 2 - resolutionManager.scaleX(100));
+            drawPlayerGemStones(g, game, player, (width - scaledPlayerFrameWidth) / 2 - resolutionManager.scaleX(100));
 
             switch(game){
                 case SimplifiedGame s -> {}
@@ -957,24 +982,24 @@ public final class GraphicView implements SplendorView {
         int tokenBaseX = width - resolutionManager.scaleX(PLAYER_FRAME_WIDTH + 400);
 
         context.renderFrame(g -> {
-            drawTokenImage(g, tokenBaseX, resolutionManager.scaleY(100), "../resources/images/tokens/diamond_token.png", game.getBank().getAmount(GemToken.DIAMOND), 1);
-            drawTokenImage(g, tokenBaseX, resolutionManager.scaleY(200), "../resources/images/tokens/sapphire_token.png", game.getBank().getAmount(GemToken.SAPPHIRE), 2);
-            drawTokenImage(g, tokenBaseX, resolutionManager.scaleY(300), "../resources/images/tokens/emerald_token.png", game.getBank().getAmount(GemToken.EMERALD), 3);
-            drawTokenImage(g, tokenBaseX, resolutionManager.scaleY(400), "../resources/images/tokens/ruby_token.png", game.getBank().getAmount(GemToken.RUBY), 4);
-            drawTokenImage(g, tokenBaseX, resolutionManager.scaleY(500), "../resources/images/tokens/onyx_token.png", game.getBank().getAmount(GemToken.ONYX), 5);
+            drawTokenImage(g, tokenBaseX, resolutionManager.scaleY(100), "/splendor/resources/images/tokens/diamond_token.png", game.getBank().getAmount(GemToken.DIAMOND), 1);
+            drawTokenImage(g, tokenBaseX, resolutionManager.scaleY(200), "/splendor/resources/images/tokens/sapphire_token.png", game.getBank().getAmount(GemToken.SAPPHIRE), 2);
+            drawTokenImage(g, tokenBaseX, resolutionManager.scaleY(300), "/splendor/resources/images/tokens/emerald_token.png", game.getBank().getAmount(GemToken.EMERALD), 3);
+            drawTokenImage(g, tokenBaseX, resolutionManager.scaleY(400), "/splendor/resources/images/tokens/ruby_token.png", game.getBank().getAmount(GemToken.RUBY), 4);
+            drawTokenImage(g, tokenBaseX, resolutionManager.scaleY(500), "/splendor/resources/images/tokens/onyx_token.png", game.getBank().getAmount(GemToken.ONYX), 5);
 
             showCards(game);
 
             int[] index = {0};
             game.getPlayers().forEach(player -> {
-                drawPlayerInfo(g, player, width - resolutionManager.scaleSize(PLAYER_FRAME_WIDTH), index[0]);
+                drawPlayerInfo(g, game, player, width - resolutionManager.scaleSize(PLAYER_FRAME_WIDTH), index[0]);
                 index[0]++;
             });
             switch(game){
                 case SimplifiedGame s -> {}
                 case CompleteGame c -> {
                     drawGameNobles(g, game.getNobles(), width);
-                    drawTokenImage(g, tokenBaseX, resolutionManager.scaleY(600), "../resources/images/tokens/gold_token.png", game.getBank().getAmount(GemToken.GOLD), 6);
+                    drawTokenImage(g, tokenBaseX, resolutionManager.scaleY(600), "/splendor/resources/images/tokens/gold_token.png", game.getBank().getAmount(GemToken.GOLD), 6);
                 }
             }
 

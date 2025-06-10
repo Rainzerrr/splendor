@@ -1,11 +1,11 @@
 name,prestigeScore,DIAMOND,SAPPHIRE,EMERALD,RUBY,ONYX,imageUrl
-Catherine de' Medici,3,0,3,3,3,0,../resources/images/nobles/catherine_de_medici.png
-Elizabeth Of Austria,3,3,3,0,0,3,../resources/images/nobles/elizabeth_of_austria.png
-Isabella I Of Castile,3,4,0,0,0,4,../resources/images/nobles/isabella_i_of_castile.png
-Niccolo Machiavelli,3,4,4,0,0,0,../resources/images/nobles/niccolo_machiavelli.png
-Suleiman The Magnificent,3,0,4,4,0,0,../resources/images/nobles/suleiman_the_magnificent.png
-Anne Of Brittany,3,3,3,3,0,0,../resources/images/nobles/anne_of_brittany.png
-Charles V,3,3,0,0,3,3,../resources/images/nobles/charles_v.png
-Francis I Of France,3,0,0,3,3,3,../resources/images/nobles/francis_i_of_france.png
-Mary Stuart,3,0,0,4,4,0,../resources/images/nobles/mary_stuart.png
-Henry VII,3,0,0,0,4,4,../resources/images/nobles/henry_vii.png
+Catherine de' Medici,3,0,3,3,3,0,/splendor/resources/images/nobles/catherine_de_medici.png
+Elizabeth Of Austria,3,3,3,0,0,3,/splendor/resources/images/nobles/elizabeth_of_austria.png
+Isabella I Of Castile,3,4,0,0,0,4,/splendor/resources/images/nobles/isabella_i_of_castile.png
+Niccolo Machiavelli,3,4,4,0,0,0,/splendor/resources/images/nobles/niccolo_machiavelli.png
+Suleiman The Magnificent,3,0,4,4,0,0,/splendor/resources/images/nobles/suleiman_the_magnificent.png
+Anne Of Brittany,3,3,3,3,0,0,/splendor/resources/images/nobles/anne_of_brittany.png
+Charles V,3,3,0,0,3,3,/splendor/resources/images/nobles/charles_v.png
+Francis I Of France,3,0,0,3,3,3,/splendor/resources/images/nobles/francis_i_of_france.png
+Mary Stuart,3,0,0,4,4,0,/splendor/resources/images/nobles/mary_stuart.png
+Henry VII,3,0,0,0,4,4,/splendor/resources/images/nobles/henry_vii.png
