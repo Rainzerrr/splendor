@@ -814,8 +814,8 @@ public final class GraphicView implements SplendorsView{
 
     @Override
     public void showCards(Game game) {
-        context.renderFrame(g ->{
-            drawCardStacks(g, 350, 100, game.getAmountsOfCardByLevel());
+        context.renderFrame(g -> {
+            drawCardStacks(g, resolutionManager.scaleX(350), resolutionManager.scaleY(100), game.getAmountsOfCardByLevel());
             drawCards(g, game.getDisplayedCards());
         });
     }
@@ -828,10 +828,12 @@ public final class GraphicView implements SplendorsView{
     @Override
     public void showPlayerTurn(Player player) {
         int width = context.getScreenInfo().width();
+        int scaledPlayerFrameWidth = resolutionManager.scaleX(PLAYER_FRAME_WIDTH);
+
         context.renderFrame(g -> {
-           drawPlayerGemStones(g, player, (width - PLAYER_FRAME_WIDTH) / 2 - 100);
-            drawReservedCards(g, player.getReservedCards(), (width - PLAYER_FRAME_WIDTH )/ 2);
-            drawPlayerNobles(g, player.getAcquiredNobles(), (width - PLAYER_FRAME_WIDTH )/ 2);
+            drawPlayerGemStones(g, player, (resolutionManager.scaleX(width) - scaledPlayerFrameWidth) / 2 - resolutionManager.scaleX(100));
+            drawReservedCards(g, player.getReservedCards(), (width - scaledPlayerFrameWidth) / 2);
+            drawPlayerNobles(g, player.getAcquiredNobles(), (width - scaledPlayerFrameWidth) / 2);
         });
     }
 
@@ -840,8 +842,13 @@ public final class GraphicView implements SplendorsView{
         context.renderFrame(g -> {
             menuButtons.clear();
 
-            int startX = 20;
-            int startY = 100;
+            int startX = resolutionManager.scaleX(20);
+            int startY = resolutionManager.scaleY(100);
+            int scaledButtonWidth = resolutionManager.scaleX(BUTTON_WIDTH);
+            int scaledButtonHeight = resolutionManager.scaleY(BUTTON_HEIGHT);
+            int scaledButtonSpacing = resolutionManager.scaleY(BUTTON_SPACING);
+            int scaledButtonRadius = resolutionManager.scaleSize(BUTTON_RADIUS);
+
             String[] options = {
                     "Acheter une carte",
                     "Récupérer 3 différentes",
@@ -850,29 +857,26 @@ public final class GraphicView implements SplendorsView{
                     "Acheter une carte réservée"
             };
 
-            g.setFont(MENU_BUTTON_FONT);
+            g.setFont(resolutionManager.scaleFont(MENU_BUTTON_FONT));
 
             for (int i = 0; i < options.length; i++) {
                 int x = startX;
-                int y = startY + i * (BUTTON_HEIGHT + BUTTON_SPACING);
+                int y = startY + i * (scaledButtonHeight + scaledButtonSpacing);
 
-                Rectangle rect = new Rectangle(x, y, BUTTON_WIDTH, BUTTON_HEIGHT);
+                Rectangle rect = new Rectangle(x, y, scaledButtonWidth, scaledButtonHeight);
                 menuButtons.put(rect, i + 1);
 
-                // Fond
                 g.setColor(new Color(80, 80, 80));
-                g.fillRoundRect(x, y, BUTTON_WIDTH, BUTTON_HEIGHT, BUTTON_RADIUS, BUTTON_RADIUS);
+                g.fillRoundRect(x, y, scaledButtonWidth, scaledButtonHeight, scaledButtonRadius, scaledButtonRadius);
 
-                // Bordure
                 g.setColor(Color.WHITE);
                 g.setStroke(new BasicStroke(2));
-                g.drawRoundRect(x, y, BUTTON_WIDTH, BUTTON_HEIGHT, BUTTON_RADIUS, BUTTON_RADIUS);
+                g.drawRoundRect(x, y, scaledButtonWidth, scaledButtonHeight, scaledButtonRadius, scaledButtonRadius);
 
-                // Texte centré
                 String text = options[i];
                 FontMetrics fm = g.getFontMetrics();
-                int textX = x + (BUTTON_WIDTH - fm.stringWidth(text)) / 2;
-                int textY = y + (BUTTON_HEIGHT - fm.getHeight()) / 2 + fm.getAscent();
+                int textX = x + (scaledButtonWidth - fm.stringWidth(text)) / 2;
+                int textY = y + (scaledButtonHeight - fm.getHeight()) / 2 + fm.getAscent();
 
                 g.setColor(Color.WHITE);
                 g.drawString(text, textX, textY);
@@ -883,22 +887,29 @@ public final class GraphicView implements SplendorsView{
     @Override
     public void showBoard(Game game) {
         int width = context.getScreenInfo().width();
+        int scaledPlayerFrameWidth = resolutionManager.scaleX(PLAYER_FRAME_WIDTH);
+        int tokenBaseX = resolutionManager.scaleX(width - PLAYER_FRAME_WIDTH - 400);
+
         context.renderFrame(g -> {
-            drawTokenImage(g, width - PLAYER_FRAME_WIDTH - 400, 100, "../resources/images/tokens/diamond_token.png", game.getBank().getAmount(GemToken.DIAMOND));
-            drawTokenImage(g, width - PLAYER_FRAME_WIDTH - 400, 200, "../resources/images/tokens/sapphire_token.png", game.getBank().getAmount(GemToken.SAPPHIRE));
-            drawTokenImage(g, width - PLAYER_FRAME_WIDTH - 400, 300, "../resources/images/tokens/emerald_token.png", game.getBank().getAmount(GemToken.EMERALD));
-            drawTokenImage(g, width - PLAYER_FRAME_WIDTH - 400, 400, "../resources/images/tokens/ruby_token.png", game.getBank().getAmount(GemToken.RUBY));
-            drawTokenImage(g, width - PLAYER_FRAME_WIDTH - 400, 500, "../resources/images/tokens/onyx_token.png", game.getBank().getAmount(GemToken.ONYX));
-            drawTokenImage(g, width - PLAYER_FRAME_WIDTH - 400, 600, "../resources/images/tokens/gold_token.png", game.getBank().getAmount(GemToken.GOLD));
+            drawTokenImage(g, tokenBaseX, resolutionManager.scaleY(100), "../resources/images/tokens/diamond_token.png", game.getBank().getAmount(GemToken.DIAMOND));
+            drawTokenImage(g, tokenBaseX, resolutionManager.scaleY(200), "../resources/images/tokens/sapphire_token.png", game.getBank().getAmount(GemToken.SAPPHIRE));
+            drawTokenImage(g, tokenBaseX, resolutionManager.scaleY(300), "../resources/images/tokens/emerald_token.png", game.getBank().getAmount(GemToken.EMERALD));
+            drawTokenImage(g, tokenBaseX, resolutionManager.scaleY(400), "../resources/images/tokens/ruby_token.png", game.getBank().getAmount(GemToken.RUBY));
+            drawTokenImage(g, tokenBaseX, resolutionManager.scaleY(500), "../resources/images/tokens/onyx_token.png", game.getBank().getAmount(GemToken.ONYX));
+            drawTokenImage(g, tokenBaseX, resolutionManager.scaleY(600), "../resources/images/tokens/gold_token.png", game.getBank().getAmount(GemToken.GOLD));
+
             showCards(game);
+
             int[] index = {0};
             game.getPlayers().forEach(player -> {
-                drawPlayerInfo(g, player, width - PLAYER_FRAME_WIDTH, index[0]);
+                drawPlayerInfo(g, player, resolutionManager.scaleX(width - PLAYER_FRAME_WIDTH), index[0]);
                 index[0]++;
             });
-            drawGameNobles(g,game.getNobles(), width);
+
+            drawGameNobles(g, game.getNobles(), resolutionManager.scaleX(width));
         });
     }
+
 
     @Override
     public int getMenuChoice(Game game) {
